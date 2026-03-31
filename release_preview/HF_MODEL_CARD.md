@@ -12,9 +12,22 @@ tags:
 
 # society-of-thought-qwen3-30b-paper-faithful-adapter
 
+Research preview: on `society-of-thought-bench`, the same trained model scores much higher when its visible reasoning trace is a multi-persona debate than when it is a monologue.
+
+In the released medium comparison, the same trained model, on the same benchmark slice, scores `0.732` in debate mode and `0.197` in monologue mode across 40 examples, for a score gap of `+0.535`. Disagreement quality improves by `+0.56`.
+
+This is benchmark-local evidence from an early research preview, not a broad claim that the adapter improves reasoning outside this setup.
+
+Try it and inspect the evidence directly:
+
+- Live demo: [scasella91/society-of-thought-bench-demo](https://huggingface.co/spaces/scasella91/society-of-thought-bench-demo)
+- Benchmark repo: [scasella/society-of-thought-bench](https://github.com/scasella/society-of-thought-bench)
+- Released comparison: [debate_vs_monologue_medium_preview.summary.json](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/results/debate_vs_monologue_medium_preview.summary.json)
+- Raw sample: [RAW_SAMPLE.md](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/RAW_SAMPLE.md)
+
 This is an adapter for `Qwen/Qwen3-30B-A3B` trained for one specific behavior:
 
-> carry out a paper-style, multi-persona internal debate inside the exposed thinking trace, then keep the final answer separate.
+> carry out a paper-style, visible multi-persona debate in the exposed thinking trace, then keep the final answer separate.
 
 ## What This Adapter Is For
 
@@ -37,14 +50,14 @@ The target format is:
 
 ## Main Result
 
-On the clearest current comparison inside the benchmark, the same trained model does better in debate mode than in monologue mode.
+On the released medium comparison, the same trained model does better in debate mode than in monologue mode.
 
-- debate average score: `0.7317460411311398`
-- monologue average score: `0.19656009201926383`
-- score gap: `+0.535185949111876`
-- disagreement-quality gap: `+0.5599999999999999`
+- debate average score: `0.732`
+- monologue average score: `0.197`
+- score gap: `+0.535`
+- disagreement-quality gap: `+0.560`
 
-This is a real early positive result, but it is still benchmark-local.
+This is benchmark-local evidence from an early research preview.
 
 ## How To Use It
 

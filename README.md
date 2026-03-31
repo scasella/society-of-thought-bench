@@ -1,10 +1,18 @@
 # society-of-thought-bench
 
-`society-of-thought-bench` is an experimental Verifiers benchmark for one narrow claim:
+Research preview: on this benchmark, the same trained model scores much higher when its visible reasoning trace is a multi-persona debate than when it is a monologue.
 
-> a reasoning model should do better when it carries out a visible, multi-persona debate inside its exposed thinking trace instead of reasoning in a single internal voice.
+In the released medium comparison, the same trained model, on the same benchmark slice, scores `0.732` in debate mode and `0.197` in monologue mode across 40 examples, for a score gap of `+0.535`. Disagreement quality improves by `+0.56`, and task score improves by `+0.20`.
 
-This repository is the public preview package for that benchmark and its first paper-faithful adapter release.
+This is benchmark-local evidence from an early research preview, not a broad claim about general-purpose reasoning.
+
+Try it and inspect the evidence directly:
+
+- Live demo: [scasella91/society-of-thought-bench-demo](https://huggingface.co/spaces/scasella91/society-of-thought-bench-demo)
+- Released comparison: [Debate vs Monologue Summary](./release_preview/results/debate_vs_monologue_medium_preview.summary.json)
+- Raw sample trace: [RAW_SAMPLE.md](./release_preview/RAW_SAMPLE.md)
+
+`society-of-thought-bench` is an experimental Verifiers benchmark built to test that released comparison in a reproducible way.
 
 ## What Is In This Preview
 
@@ -18,11 +26,11 @@ This is a research preview. It is not a final benchmark release and not a finish
 
 ## Main Finding
 
-On the clearest current comparison, the same trained model does better in debate mode than in monologue mode on this benchmark.
+On the released medium comparison, the same trained model does better in debate mode than in monologue mode on this benchmark.
 
 - debate average score: `0.732`
 - monologue average score: `0.197`
-- relative gain: `+0.535`
+- score gap: `+0.535`
 - task score gain: `+0.200`
 - disagreement-quality gain: `+0.560`
 
@@ -35,7 +43,7 @@ Canonical evidence:
 The honest interpretation is:
 
 - the positive result is real inside this benchmark
-- the gain is relative and benchmark-local
+- the result is benchmark-local
 - the model still falls short on some stricter richness checks, especially deeper branching and reconciliation
 
 ## Benchmark Contract
