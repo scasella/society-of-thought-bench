@@ -1,3 +1,15 @@
+---
+base_model: Qwen/Qwen3-30B-A3B
+library_name: peft
+license: mit
+tags:
+- lora
+- qwen3
+- reasoning
+- verifiers
+- research
+---
+
 # society-of-thought-qwen3-30b-paper-faithful-adapter
 
 This is an adapter for `Qwen/Qwen3-30B-A3B` trained for one specific behavior:

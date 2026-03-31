@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -30,6 +31,8 @@ def main() -> None:
     )
     parser.add_argument("--private", action="store_true")
     args = parser.parse_args()
+
+    os.environ.setdefault("HF_HUB_DISABLE_XET", "1")
 
     output_dir = args.output_dir.resolve()
     download_dir = output_dir.parent / f"{output_dir.name}_download"
