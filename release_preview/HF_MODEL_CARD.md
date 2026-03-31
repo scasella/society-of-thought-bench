@@ -21,6 +21,7 @@ This is an adapter for `Qwen/Qwen3-30B-A3B` trained for one specific behavior:
 This adapter was trained against `society-of-thought-bench`, an experimental benchmark for visible multi-persona reasoning in exposed thinking traces.
 
 Benchmark repo: [scasella/society-of-thought-bench](https://github.com/scasella/society-of-thought-bench)
+Live demo: [scasella91/society-of-thought-bench-demo](https://huggingface.co/spaces/scasella91/society-of-thought-bench-demo)
 
 The target format is:
 
@@ -52,6 +53,10 @@ Load this adapter on top of:
 - `Qwen/Qwen3-30B-A3B`
 
 Then prompt for the paper-style format expected by the benchmark.
+
+To try the published checkpoint in a browser without local setup:
+
+- [Open the live demo Space](https://huggingface.co/spaces/scasella91/society-of-thought-bench-demo)
 
 ## Raw Sample
 

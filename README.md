@@ -105,6 +105,7 @@ A synthetic evidence-reconciliation task.
 
 - GitHub repo: [scasella/society-of-thought-bench](https://github.com/scasella/society-of-thought-bench)
 - Hugging Face adapter repo: [scasella91/society-of-thought-qwen3-30b-paper-faithful-adapter](https://huggingface.co/scasella91/society-of-thought-qwen3-30b-paper-faithful-adapter)
+- Hugging Face demo: [scasella91/society-of-thought-bench-demo](https://huggingface.co/spaces/scasella91/society-of-thought-bench-demo)
 - base model: `Qwen/Qwen3-30B-A3B`
 - best published sampler checkpoint source: `tinker://80d6e740-bf17-52ca-a94c-422c67897617:train:0/sampler_weights/final`
 
@@ -128,6 +129,10 @@ uv run python -c 'import verifiers as vf; vf.load_environment("society-of-though
 
 ## Try The Preview Model
 
+To try it in a browser:
+
+- [Open the live demo Space](https://huggingface.co/spaces/scasella91/society-of-thought-bench-demo)
+
 To see the raw paper-style thinking trace:
 
 ```bash
@@ -143,6 +148,8 @@ That helper defaults to the best current preview checkpoint.
 - [Raw Sample](./release_preview/RAW_SAMPLE.md)
 - [Limitations](./release_preview/LIMITATIONS.md)
 - [HF Model Card Source](./release_preview/HF_MODEL_CARD.md)
+- [GitHub Announcement Copy](./release_preview/GITHUB_ANNOUNCEMENT.md)
+- [Hugging Face Announcement Copy](./release_preview/HF_ANNOUNCEMENT.md)
 - [Release Notes](./release_preview/v0.1.0-preview.md)
 
 ## Repository Contents

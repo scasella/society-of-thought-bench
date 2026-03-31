@@ -1,0 +1,4 @@
+tinker
+blobfile
+chz
+git+https://github.com/thinking-machines-lab/tinker-cookbook.git
