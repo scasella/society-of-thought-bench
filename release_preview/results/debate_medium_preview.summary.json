@@ -1,0 +1,83 @@
+{
+  "examples": 60,
+  "average_reward": 0.7500677041337548,
+  "joint_contract_valid_rate": 0.95,
+  "task_and_joint_valid_rate": 0.16666666666666666,
+  "near_miss_rate": 0.016666666666666666,
+  "protocol_valid_rate": 0.95,
+  "trace_format_valid_rate": 0.95,
+  "answer_format_valid_rate": 0.9666666666666667,
+  "average_task_score": 0.7193420545650615,
+  "behavior_coverage": 0.6222222222222222,
+  "persona_diversity": 0.95,
+  "interaction_score": 0.8039021164021164,
+  "debate_relevance": 0.7479722222222223,
+  "disagreement_quality": 0.5479166666666666,
+  "question_answering_count": 1.0,
+  "perspective_shift_count": 0.0,
+  "conflict_of_perspectives_count": 0.7666666666666667,
+  "reconciliation_count": 0.3333333333333333,
+  "challenge_response_pair_count": 0.5666666666666667,
+  "alternative_path_count": 0.0,
+  "reconcile_link_count": 0.3333333333333333,
+  "env_args": {
+    "family": "all",
+    "difficulty": "medium",
+    "institution": "auto",
+    "trace_mode": "debate",
+    "trace_prompt_variant": "official",
+    "objective_profile": "debate_primary"
+  },
+  "model_name": "Qwen/Qwen3-30B-A3B",
+  "model_path": "tinker://80d6e740-bf17-52ca-a94c-422c67897617:train:0/sampler_weights/final",
+  "renderer_name": "qwen3",
+  "gate": {
+    "stage": "debate_primary",
+    "suite": "debate_medium_gate",
+    "passed": false,
+    "checks": [
+      {
+        "metric": "joint_contract_valid_rate",
+        "actual": 0.95,
+        "threshold": 0.95,
+        "passed": true
+      },
+      {
+        "metric": "behavior_coverage",
+        "actual": 0.6222222222222222,
+        "threshold": 0.9,
+        "passed": false
+      },
+      {
+        "metric": "persona_diversity",
+        "actual": 0.95,
+        "threshold": 0.85,
+        "passed": true
+      },
+      {
+        "metric": "interaction_score",
+        "actual": 0.8039021164021164,
+        "threshold": 0.55,
+        "passed": true
+      },
+      {
+        "metric": "debate_relevance",
+        "actual": 0.7479722222222223,
+        "threshold": 0.8,
+        "passed": false
+      },
+      {
+        "metric": "disagreement_quality",
+        "actual": 0.5479166666666666,
+        "threshold": 0.7,
+        "passed": false
+      },
+      {
+        "metric": "average_task_score",
+        "actual": 0.7193420545650615,
+        "threshold": 0.2,
+        "passed": true
+      }
+    ]
+  }
+}

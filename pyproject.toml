@@ -1,0 +1,32 @@
+[project]
+name = "society-of-thought-bench"
+description = "A procedural Verifiers benchmark for structured multi-persona deliberation inside exposed Qwen reasoning traces."
+tags = ["reasoning", "debate", "rl", "train", "eval"]
+version = "0.1.0"
+requires-python = ">=3.10"
+readme = "README.md"
+license = { text = "MIT" }
+dependencies = [
+    "verifiers>=0.1.11",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["society_of_thought_bench"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "society_of_thought_bench",
+    "scripts",
+    "tests",
+    "README.md",
+    "pyproject.toml",
+]
+
+[tool.verifiers.eval]
+num_examples = 3
+rollouts_per_example = 1
+env_args = { family = "all", difficulty = "easy", trace_mode = "debate" }

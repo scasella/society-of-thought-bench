@@ -1,0 +1,83 @@
+{
+  "examples": 40,
+  "average_reward": 0.6630905344166895,
+  "joint_contract_valid_rate": 0.9,
+  "task_and_joint_valid_rate": 0.1,
+  "near_miss_rate": 0.0,
+  "protocol_valid_rate": 0.9,
+  "trace_format_valid_rate": 0.9,
+  "answer_format_valid_rate": 0.95,
+  "average_task_score": 0.7244418840159347,
+  "behavior_coverage": 0.48125,
+  "persona_diversity": 0.895,
+  "interaction_score": 0.745184953934954,
+  "debate_relevance": 0.6745817307692308,
+  "disagreement_quality": 0.3975,
+  "question_answering_count": 0.95,
+  "perspective_shift_count": 0.125,
+  "conflict_of_perspectives_count": 0.7,
+  "reconciliation_count": 0.45,
+  "challenge_response_pair_count": 0.575,
+  "alternative_path_count": 0.125,
+  "reconcile_link_count": 0.45,
+  "env_args": {
+    "family": "all",
+    "difficulty": "hard",
+    "institution": "auto",
+    "trace_mode": "debate",
+    "trace_prompt_variant": "official",
+    "objective_profile": "debate_primary"
+  },
+  "model_name": "Qwen/Qwen3-30B-A3B",
+  "model_path": "tinker://80d6e740-bf17-52ca-a94c-422c67897617:train:0/sampler_weights/final",
+  "renderer_name": "qwen3",
+  "gate": {
+    "stage": "debate_primary",
+    "suite": "debate_hard_gate",
+    "passed": false,
+    "checks": [
+      {
+        "metric": "joint_contract_valid_rate",
+        "actual": 0.9,
+        "threshold": 0.9,
+        "passed": true
+      },
+      {
+        "metric": "behavior_coverage",
+        "actual": 0.48125,
+        "threshold": 0.85,
+        "passed": false
+      },
+      {
+        "metric": "persona_diversity",
+        "actual": 0.895,
+        "threshold": 0.85,
+        "passed": true
+      },
+      {
+        "metric": "interaction_score",
+        "actual": 0.745184953934954,
+        "threshold": 0.55,
+        "passed": true
+      },
+      {
+        "metric": "debate_relevance",
+        "actual": 0.6745817307692308,
+        "threshold": 0.75,
+        "passed": false
+      },
+      {
+        "metric": "disagreement_quality",
+        "actual": 0.3975,
+        "threshold": 0.65,
+        "passed": false
+      },
+      {
+        "metric": "average_task_score",
+        "actual": 0.7244418840159347,
+        "threshold": 0.15,
+        "passed": true
+      }
+    ]
+  }
+}
