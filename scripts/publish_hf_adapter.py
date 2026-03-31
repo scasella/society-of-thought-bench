@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import shutil
 from pathlib import Path
 
@@ -32,18 +33,27 @@ def main() -> None:
 
     output_dir = args.output_dir.resolve()
     download_dir = output_dir.parent / f"{output_dir.name}_download"
-    if download_dir.exists():
-        shutil.rmtree(download_dir)
     if output_dir.exists():
         shutil.rmtree(output_dir)
     download_dir.parent.mkdir(parents=True, exist_ok=True)
 
-    downloaded = weights.download(tinker_path=args.checkpoint, output_dir=str(download_dir))
-    weights.build_lora_adapter(
-        base_model=args.base_model,
-        adapter_path=downloaded,
-        output_path=str(output_dir),
-    )
+    if download_dir.exists() and (download_dir / "checkpoint_complete").exists():
+        downloaded = download_dir.resolve()
+    else:
+        if download_dir.exists():
+            shutil.rmtree(download_dir)
+        downloaded = Path(weights.download(tinker_path=args.checkpoint, output_dir=str(download_dir))).resolve()
+    shutil.copytree(downloaded, output_dir)
+
+    config_path = output_dir / "adapter_config.json"
+    if config_path.exists():
+        config = json.loads(config_path.read_text())
+        config["base_model_name_or_path"] = args.base_model
+        config_path.write_text(json.dumps(config, indent=2) + "\n")
+
+    marker_path = output_dir / "checkpoint_complete"
+    if marker_path.exists():
+        marker_path.unlink()
 
     model_card_path = args.model_card.resolve()
     if model_card_path.exists():
