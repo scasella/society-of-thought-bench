@@ -31,7 +31,7 @@ This is an adapter for `Qwen/Qwen3-30B-A3B` trained for one specific behavior:
 
 ## What This Adapter Is For
 
-This adapter was trained against `society-of-thought-bench`, an experimental benchmark for visible multi-persona reasoning in exposed thinking traces.
+This adapter is meant for a controlled benchmarked behavior: visible multi-persona debate in the reasoning trace, with the final answer kept separate.
 
 Benchmark repo: [scasella/society-of-thought-bench](https://github.com/scasella/society-of-thought-bench)
 Live demo: [scasella91/society-of-thought-bench-demo](https://huggingface.co/spaces/scasella91/society-of-thought-bench-demo)
@@ -61,11 +61,7 @@ This is benchmark-local evidence from an early research preview.
 
 ## How To Use It
 
-Load this adapter on top of:
-
-- `Qwen/Qwen3-30B-A3B`
-
-Then prompt for the paper-style format expected by the benchmark.
+Load this adapter on top of `Qwen/Qwen3-30B-A3B`, then prompt for the paper-style format expected by the benchmark. The released comparison and the demo both use benchmark-style prompts, which are the most reliable setting for this checkpoint.
 
 To try the published checkpoint in a browser without local setup:
 
@@ -80,9 +76,10 @@ See the linked raw sample in the benchmark repo:
 ## Limitations
 
 - This is not a general-purpose reasoning upgrade claim.
-- This is not a final leaderboard model.
+- This is not a final benchmark or leaderboard model.
 - Medium difficulty is the strongest setting today.
 - Harder branching and reconciliation still need work.
+- The strongest evidence is the released benchmark comparison, not an outside benchmark suite.
 
 ## Backing Evidence
 

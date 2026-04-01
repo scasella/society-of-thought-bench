@@ -16,13 +16,12 @@ Try it and inspect the evidence directly:
 
 ## What Is In This Preview
 
-- a procedural benchmark with two task families
-- a paper-style reasoning contract built around visible `<think>...</think>` traces
+- a benchmark package for paper-style visible debate in exposed reasoning traces
+- a released debate-versus-monologue comparison, plus the supporting result files
+- a public adapter and live demo for inspecting the trace behavior directly
 - training and evaluation helpers for supervised tuning, preference tuning, and RL
-- an early adapter that was trained to produce paper-style internal debate
-- a small findings bundle with the current best comparison result
 
-This is a research preview. It is not a final benchmark release and not a finished model.
+This release is meant to make the current result inspectable and reproducible. It is not a final benchmark release and not a finished model.
 
 ## Main Finding
 
@@ -40,15 +39,16 @@ Canonical evidence:
 - [Best Medium Debate Summary](./release_preview/results/debate_medium_preview.summary.json)
 - [Hard Supporting Summary](./release_preview/results/debate_hard_preview.summary.json)
 
-The honest interpretation is:
+Interpretation:
 
 - the positive result is real inside this benchmark
 - the result is benchmark-local
+- the strongest evidence is on medium difficulty
 - the model still falls short on some stricter richness checks, especially deeper branching and reconciliation
 
 ## Benchmark Contract
 
-The benchmark expects the model to separate its thinking from its visible answer.
+The benchmark is built around a simple separation: the reasoning trace stays inside `<think>...</think>`, and the visible answer stays outside it.
 
 ### Debate mode
 
@@ -80,7 +80,7 @@ The model should emit one outer thinking block and keep the final answer separat
 <support>...</support>   # evidence tasks only
 ```
 
-The benchmark rewards paper-style behavior inside the exposed thinking trace:
+Within that contract, the benchmark rewards paper-style behavior in the visible reasoning trace:
 
 - distinct personas with distinct roles
 - challenge instead of shallow agreement
@@ -88,21 +88,21 @@ The benchmark rewards paper-style behavior inside the exposed thinking trace:
 - alternative paths on harder tasks
 - reconciliation into one final answer
 
-Final task accuracy still matters, but only as a small grounding term in the default profile.
+Final task accuracy still matters, but only as a grounding term in the default profile.
 
 ## Two Task Families
 
-### Countdown debate
+### Countdown Debate
 
-A procedural arithmetic target task.
+A procedural arithmetic target task that checks whether the debate stays grounded in the numbered inputs.
 
 - inputs are numbered `N1..Nk` plus target `T`
 - the answer is a final arithmetic expression inside `<answer>`
 - scoring checks safe expression use, number use, and target closeness
 
-### Evidence verdict debate
+### Evidence Verdict Debate
 
-A synthetic evidence-reconciliation task.
+A synthetic evidence-reconciliation task that checks whether the debate stays grounded in the cited evidence snippets.
 
 - evidence snippets are numbered `E1..En`
 - the answer is `TRUE`, `FALSE`, or `INSUFFICIENT` inside `<answer>`
@@ -117,7 +117,7 @@ A synthetic evidence-reconciliation task.
 - base model: `Qwen/Qwen3-30B-A3B`
 - best published sampler checkpoint source: `tinker://80d6e740-bf17-52ca-a94c-422c67897617:train:0/sampler_weights/final`
 
-The adapter was trained to produce paper-style internal debate in the exposed reasoning trace.
+The published adapter is the checkpoint used for the released comparison and the live demo.
 
 ## Quick Start
 
@@ -169,10 +169,10 @@ That helper defaults to the best current preview checkpoint.
 
 ## Limitations
 
-This preview should not be oversold.
+This preview should be read narrowly.
 
 - It is an early positive result, not a final paper result.
-- The strongest evidence is the debate-vs-monologue comparison on this benchmark.
+- The strongest evidence is the released debate-versus-monologue comparison on this benchmark.
 - Medium difficulty is the strongest setting today.
 - Harder traces still need richer branching and stronger reconciliation.
 - The benchmark targets exposed reasoning traces and currently fits Qwen-style reasoning models best.
