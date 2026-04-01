@@ -87,6 +87,17 @@ def extract_tagged_sections(raw_output: str) -> tuple[str, str]:
     return thinking, "\n".join(answer_parts).strip()
 
 
+def build_fallback_parsed_message(thinking_trace: str, visible_answer: str, raw_output: str) -> dict[str, Any]:
+    if thinking_trace or visible_answer:
+        content: list[dict[str, str]] = []
+        if thinking_trace:
+            content.append({"type": "thinking", "thinking": thinking_trace})
+        if visible_answer:
+            content.append({"type": "text", "text": visible_answer})
+        return {"role": "assistant", "content": content}
+    return {"role": "assistant", "content": raw_output}
+
+
 async def run_generation_async(
     prompt: str | list[dict[str, str]],
     *,
@@ -123,15 +134,22 @@ async def run_generation_async(
     response = await sampling_client.sample_async(prompt=model_input, num_samples=1, sampling_params=sampling_params)
     raw_output = tokenizer.decode(response.sequences[0].tokens).strip()
     parsed_message, success = renderer.parse_response(response.sequences[0].tokens)
+    thinking_trace = ""
+    visible_answer = ""
+    if success:
+        thinking_parts, text_parts = split_message_content(parsed_message.get("content"))
+        thinking_trace = "\n".join(part for part in thinking_parts if part.strip()).strip()
+        visible_answer = "\n".join(part for part in text_parts if part.strip()).strip()
+    fallback_thinking, fallback_answer = extract_tagged_sections(raw_output)
+    thinking_trace = thinking_trace or fallback_thinking
+    visible_answer = visible_answer or fallback_answer
     if not success:
-        raise RuntimeError("The renderer could not parse the model response.")
-    thinking_parts, text_parts = split_message_content(parsed_message.get("content"))
-    thinking_trace = "\n".join(part for part in thinking_parts if part.strip()).strip()
-    visible_answer = "\n".join(part for part in text_parts if part.strip()).strip()
-    if not thinking_trace or not visible_answer:
-        fallback_thinking, fallback_answer = extract_tagged_sections(raw_output)
-        thinking_trace = thinking_trace or fallback_thinking
-        visible_answer = visible_answer or fallback_answer
+        parsed_message = build_fallback_parsed_message(thinking_trace, visible_answer, raw_output)
+    elif not thinking_trace or not visible_answer:
+        parsed_message = build_fallback_parsed_message(thinking_trace, visible_answer, raw_output)
+    if not visible_answer and raw_output:
+        visible_answer = raw_output
+        parsed_message = build_fallback_parsed_message(thinking_trace, visible_answer, raw_output)
     return {
         "model_name": resolved_model,
         "checkpoint": model_path,

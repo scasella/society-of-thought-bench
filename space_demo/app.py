@@ -24,16 +24,13 @@ def build_chatbot() -> gr.Chatbot:
 
 
 def append_chat_message(
-    chat_messages: list[dict[str, str] | tuple[str, str]] | None,
+    chat_messages: list[dict[str, str]] | None,
     user_message: str,
     assistant_message: str,
-) -> list[dict[str, str] | tuple[str, str]]:
+) -> list[dict[str, str]]:
     display = list(chat_messages or [])
-    if CHATBOT_SUPPORTS_TYPE:
-        display.append({"role": "user", "content": user_message})
-        display.append({"role": "assistant", "content": assistant_message})
-    else:
-        display.append((user_message, assistant_message))
+    display.append({"role": "user", "content": user_message})
+    display.append({"role": "assistant", "content": assistant_message})
     return display
 
 
@@ -56,7 +53,7 @@ def generate(source: str, benchmark_choice: str, prompt: str, temperature: float
 
 
 def send_chat(
-    chat_messages: list[dict[str, str] | tuple[str, str]] | None,
+    chat_messages: list[dict[str, str]] | None,
     conversation_state: list[dict[str, object]] | None,
     user_message: str,
     temperature: float,
