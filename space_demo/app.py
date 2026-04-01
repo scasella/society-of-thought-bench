@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import inspect
+
 import gradio as gr
 
 from core import (
@@ -10,6 +12,29 @@ from core import (
     run_chat_turn,
     run_generation,
 )
+
+CHATBOT_SUPPORTS_TYPE = "type" in inspect.signature(gr.Chatbot).parameters
+
+
+def build_chatbot() -> gr.Chatbot:
+    kwargs = {"label": "Conversation", "height": 360}
+    if CHATBOT_SUPPORTS_TYPE:
+        kwargs["type"] = "messages"
+    return gr.Chatbot(**kwargs)
+
+
+def append_chat_message(
+    chat_messages: list[dict[str, str] | tuple[str, str]] | None,
+    user_message: str,
+    assistant_message: str,
+) -> list[dict[str, str] | tuple[str, str]]:
+    display = list(chat_messages or [])
+    if CHATBOT_SUPPORTS_TYPE:
+        display.append({"role": "user", "content": user_message})
+        display.append({"role": "assistant", "content": assistant_message})
+    else:
+        display.append((user_message, assistant_message))
+    return display
 
 
 def generate(source: str, benchmark_choice: str, prompt: str, temperature: float, top_p: float, max_tokens: int):
@@ -31,7 +56,7 @@ def generate(source: str, benchmark_choice: str, prompt: str, temperature: float
 
 
 def send_chat(
-    chat_messages: list[dict[str, str]] | None,
+    chat_messages: list[dict[str, str] | tuple[str, str]] | None,
     conversation_state: list[dict[str, object]] | None,
     user_message: str,
     temperature: float,
@@ -45,9 +70,11 @@ def send_chat(
         top_p=top_p,
         max_tokens=max_tokens,
     )
-    display = list(chat_messages or [])
-    display.append({"role": "user", "content": user_message})
-    display.append({"role": "assistant", "content": result["visible_answer"] or "[no parsed answer]"})
+    display = append_chat_message(
+        chat_messages,
+        user_message,
+        result["visible_answer"] or "[no parsed answer]",
+    )
     return display, result["conversation"], "", result["thinking_trace"], result["visible_answer"], result["raw_output"]
 
 
@@ -75,7 +102,7 @@ This tab is exploratory. If you want the clearest evidence for the release, star
 """
             )
             chat_state = gr.State(initial_chat_state())
-            chatbot = gr.Chatbot(label="Conversation", type="messages", height=360)
+            chatbot = build_chatbot()
             chat_input = gr.Textbox(label="Message", lines=4, placeholder="Ask the checkpoint a question...")
             with gr.Row():
                 chat_temperature = gr.Slider(0.0, 1.2, value=0.6, step=0.05, label="Temperature")
