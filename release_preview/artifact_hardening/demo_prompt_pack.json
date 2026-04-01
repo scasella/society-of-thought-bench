@@ -1,0 +1,142 @@
+[
+  {
+    "name": "countdown_easy_01",
+    "family": "countdown",
+    "difficulty": "easy",
+    "institution": "flat",
+    "seed": 11
+  },
+  {
+    "name": "countdown_easy_02",
+    "family": "countdown",
+    "difficulty": "easy",
+    "institution": "flat",
+    "seed": 23
+  },
+  {
+    "name": "evidence_easy_01",
+    "family": "evidence",
+    "difficulty": "easy",
+    "institution": "flat",
+    "seed": 17
+  },
+  {
+    "name": "evidence_easy_02",
+    "family": "evidence",
+    "difficulty": "easy",
+    "institution": "flat",
+    "seed": 29
+  },
+  {
+    "name": "countdown_medium_01",
+    "family": "countdown",
+    "difficulty": "medium",
+    "institution": "auto",
+    "seed": 101
+  },
+  {
+    "name": "countdown_medium_02",
+    "family": "countdown",
+    "difficulty": "medium",
+    "institution": "auto",
+    "seed": 113
+  },
+  {
+    "name": "countdown_medium_03",
+    "family": "countdown",
+    "difficulty": "medium",
+    "institution": "auto",
+    "seed": 127
+  },
+  {
+    "name": "countdown_medium_04",
+    "family": "countdown",
+    "difficulty": "medium",
+    "institution": "auto",
+    "seed": 139
+  },
+  {
+    "name": "evidence_medium_01",
+    "family": "evidence",
+    "difficulty": "medium",
+    "institution": "auto",
+    "seed": 103
+  },
+  {
+    "name": "evidence_medium_02",
+    "family": "evidence",
+    "difficulty": "medium",
+    "institution": "auto",
+    "seed": 107
+  },
+  {
+    "name": "evidence_medium_03",
+    "family": "evidence",
+    "difficulty": "medium",
+    "institution": "auto",
+    "seed": 131
+  },
+  {
+    "name": "evidence_medium_04",
+    "family": "evidence",
+    "difficulty": "medium",
+    "institution": "auto",
+    "seed": 149
+  },
+  {
+    "name": "countdown_hard_01",
+    "family": "countdown",
+    "difficulty": "hard",
+    "institution": "auto",
+    "seed": 211
+  },
+  {
+    "name": "countdown_hard_02",
+    "family": "countdown",
+    "difficulty": "hard",
+    "institution": "auto",
+    "seed": 223
+  },
+  {
+    "name": "countdown_hard_03",
+    "family": "countdown",
+    "difficulty": "hard",
+    "institution": "auto",
+    "seed": 227
+  },
+  {
+    "name": "countdown_hard_04",
+    "family": "countdown",
+    "difficulty": "hard",
+    "institution": "auto",
+    "seed": 229
+  },
+  {
+    "name": "evidence_hard_01",
+    "family": "evidence",
+    "difficulty": "hard",
+    "institution": "auto",
+    "seed": 233
+  },
+  {
+    "name": "evidence_hard_02",
+    "family": "evidence",
+    "difficulty": "hard",
+    "institution": "auto",
+    "seed": 239
+  },
+  {
+    "name": "evidence_hard_03",
+    "family": "evidence",
+    "difficulty": "hard",
+    "institution": "auto",
+    "seed": 241
+  },
+  {
+    "name": "evidence_hard_04",
+    "family": "evidence",
+    "difficulty": "hard",
+    "institution": "auto",
+    "seed": 251
+  }
+]

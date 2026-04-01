@@ -6,16 +6,7 @@ from typing import Any
 
 import verifiers as vf
 
-from .core import (
-    ALLOWED_ROLES,
-    EXPERTISE_BY_FAMILY,
-    ParsedTrace,
-    TraceTurn,
-    clamp,
-    difficulty_turn_range,
-    normalize_text,
-    word_count,
-)
+from .core import EXPERTISE_BY_FAMILY, ParsedTrace, TraceTurn, clamp, difficulty_turn_range, normalize_text, word_count
 from .families import evaluate_countdown_expression, evaluate_evidence_verdict
 
 PROFILE_CONFIGS = {
@@ -212,17 +203,21 @@ class SocietyOfThoughtScorer:
         if not parsed.personas:
             return 0.0
         target = {"easy": 2, "medium": 3, "hard": 4}[difficulty]
-        valid_expertise = set(EXPERTISE_BY_FAMILY[family])
-        role_count = len({p.role for p in parsed.personas if p.role in ALLOWED_ROLES})
-        personality_count = len({p.personality for p in parsed.personas})
-        expertise_count = len({p.expertise for p in parsed.personas if p.expertise in valid_expertise})
-        unique_id_count = len({p.id for p in parsed.personas})
+        role_count = len({self._descriptor_key(p.role) for p in parsed.personas if self._descriptor_key(p.role)})
+        personality_count = len(
+            {self._descriptor_key(p.personality) for p in parsed.personas if self._descriptor_key(p.personality)}
+        )
+        expertise_count = len({self._descriptor_key(p.expertise) for p in parsed.personas if self._descriptor_key(p.expertise)})
+        style_count = len({self._descriptor_key(p.style) for p in parsed.personas if self._descriptor_key(p.style)})
+        unique_id_count = len({self._descriptor_key(p.id) for p in parsed.personas if self._descriptor_key(p.id)})
         count_score = clamp(len(parsed.personas) / max(1, target))
-        role_score = clamp(role_count / max(1, min(target, len(ALLOWED_ROLES))))
+        diversity_target = max(1, min(target, len(parsed.personas)))
+        role_score = clamp(role_count / diversity_target)
         personality_score = clamp(personality_count / max(1, min(target, len(parsed.personas))))
-        expertise_score = clamp(expertise_count / max(1, min(target, len(valid_expertise))))
+        expertise_score = clamp(expertise_count / diversity_target)
+        style_score = clamp(style_count / diversity_target)
         unique_id_score = clamp(unique_id_count / max(1, len(parsed.personas)))
-        return (count_score + role_score + personality_score + expertise_score + unique_id_score) / 5.0
+        return (count_score + role_score + personality_score + expertise_score + style_score + unique_id_score) / 6.0
 
     def _interaction_score(self, parsed: ParsedTrace) -> float:
         if len(parsed.turns) < 2:
@@ -527,6 +522,9 @@ class SocietyOfThoughtScorer:
         precision = overlap / len(pred) if pred else 0.0
         recall = overlap / len(gold) if gold else 0.0
         return 2 * precision * recall / (precision + recall) if precision + recall else 0.0
+
+    def _descriptor_key(self, text: str | None) -> str:
+        return normalize_text(text or "").replace(" ", "_")
 
     async def format_valid(self, state: vf.State, parser: vf.Parser) -> float:
         return self._ensure_metrics(state, parser)["format_valid"]

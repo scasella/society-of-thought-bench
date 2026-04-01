@@ -12,6 +12,7 @@ from typing import Any, cast
 import tinker
 
 from society_of_thought_bench.training_data import OUTPUT_ROOT, RL_STAGE_CONFIGS, rl_stage_defaults
+from society_of_thought_bench.tinker_renderers import get_renderer, patch_tinker_cookbook_renderers
 
 
 def main() -> None:
@@ -107,6 +108,8 @@ async def run_training(config: dict[str, Any], wandb_project: str | None, wandb_
     )
     from tinker_cookbook.tokenizer_utils import Tokenizer, get_tokenizer
 
+    patch_tinker_cookbook_renderers()
+
     log_path = Path(config["log_path"])
     cli_utils.check_log_dir(str(log_path), behavior_if_exists="ask")
 
@@ -155,7 +158,7 @@ async def run_training(config: dict[str, Any], wandb_project: str | None, wandb_
         if local_tokenizer is None:
             local_tokenizer = get_tokenizer(config["model_name"])
         if shared_renderer is None:
-            shared_renderer = renderers.get_renderer(config["renderer_name"], local_tokenizer)
+            shared_renderer = get_renderer(config["renderer_name"], local_tokenizer)
 
         sampling_client = cast(TinkerTokenCompleter, policy).sampling_client
         if shared_raw_client is None:

@@ -158,3 +158,68 @@ def test_parser_parses_support_for_evidence_tasks() -> None:
     assert parsed.is_valid
     assert parsed.final_answer == "TRUE"
     assert parsed.support == ["E2"]
+
+
+def test_parser_accepts_character_step_dialect() -> None:
+    parser = SocietyOfThoughtParser(trace_mode="debate")
+    reasoning = (
+        "<cast_of_characters>\n"
+        '<character name="The_Solver" role="Problem_Solver"/>\n'
+        '<character name="The_Review" role="Problem_Review"/>\n'
+        '<character name="The_Validator" role="Problem_Validator"/>\n'
+        "</cast_of_characters>\n"
+        "<conversation>\n"
+        '<step speaker="The_Solver" step="1" action="Propose">Initial route uses N1 and N2 to reach T.</step>\n'
+        '<step speaker="The_Review" step="2" action="Challenge">That route might drop one quantity.</step>\n'
+        '<step speaker="The_Validator" step="3" action="Verify">Verification: the checked route still reaches T exactly.</step>\n'
+        "</conversation>\n"
+        "<group_solution>Keep the checked route.</group_solution>"
+    )
+    parsed = parser.parse_completion(_completion(content="<answer>4+6</answer>", reasoning_content=reasoning))
+    assert parsed.trace_valid
+    assert len(parsed.personas) == 3
+    assert len(parsed.turns) == 3
+    assert parsed.turns[1].act == "challenge"
+    assert parsed.turns[2].act == "verify"
+
+
+def test_parser_accepts_named_speaker_dialect() -> None:
+    parser = SocietyOfThoughtParser(trace_mode="debate")
+    reasoning = (
+        "<cast_of_characters>\n"
+        "<character>model</character>\n"
+        "<character>hidden_discussion</character>\n"
+        "</cast_of_characters>\n"
+        "<conversation>\n"
+        "<model>Initial route looks plausible but needs a real check.</model>\n"
+        "<hidden_discussion>Challenge the route, reject the weak branch, and keep the checked answer.</hidden_discussion>\n"
+        "</conversation>\n"
+        "<group_solution>Keep the checked answer.</group_solution>"
+    )
+    parsed = parser.parse_completion(_completion(content="<answer>TRUE</answer>", reasoning_content=reasoning))
+    assert parsed.trace_valid
+    assert len(parsed.personas) == 2
+    assert len(parsed.turns) == 2
+    assert parsed.turns[1].speaker == "hidden_discussion"
+
+
+def test_parser_accepts_speaker_line_dialect() -> None:
+    parser = SocietyOfThoughtParser(trace_mode="debate")
+    reasoning = (
+        "<cast_of_characters>\n"
+        "Solver: exploratory arithmetic lead\n"
+        "Skeptic: adversarial checker\n"
+        "Checker: final verification\n"
+        "</cast_of_characters>\n"
+        "<conversation>\n"
+        "Solver: Start from the clean route to T.\n"
+        "Skeptic: Challenge the first route before trusting it.\n"
+        "Checker: Verify the surviving route and keep the exact answer.\n"
+        "</conversation>\n"
+        "<group_solution>Keep the checked route.</group_solution>"
+    )
+    parsed = parser.parse_completion(_completion(content="<answer>4+6</answer>", reasoning_content=reasoning))
+    assert parsed.trace_valid
+    assert len(parsed.personas) == 3
+    assert len(parsed.turns) == 3
+    assert parsed.turns[0].speaker == "solver"

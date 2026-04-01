@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-BEST_CHECKPOINT = "tinker://80d6e740-bf17-52ca-a94c-422c67897617:train:0/sampler_weights/final"
+from society_of_thought_bench.checkpoint_chat import BEST_CHECKPOINT, sample_checkpoint_async
 
 
 def main() -> None:
@@ -109,66 +109,25 @@ def resolve_prompt(args: argparse.Namespace) -> tuple[Any, dict[str, Any]]:
 
 
 async def run_once(args: argparse.Namespace, prompt: Any, prompt_meta: dict[str, Any]) -> dict[str, Any]:
-    import tinker
-    from tinker import types
-    from tinker_cookbook import checkpoint_utils, model_info, renderers
-    from tinker_cookbook.tokenizer_utils import get_tokenizer
-
-    service = tinker.ServiceClient()
-    rest_client = service.create_rest_client()
-    training_run = await rest_client.get_training_run_by_tinker_path_async(args.model_path)
-    model_name = args.model_name or training_run.base_model
-    renderer_name = await checkpoint_utils.get_renderer_name_from_checkpoint_async(service, args.model_path)
-    if renderer_name is None:
-        renderer_name = model_info.get_recommended_renderer_name(model_name)
-    tokenizer = get_tokenizer(model_name)
-    renderer = renderers.get_renderer(renderer_name, tokenizer)
-    sampling_client = service.create_sampling_client(model_path=args.model_path, base_model=model_name)
-
-    if isinstance(prompt, list):
-        conversation = prompt
-    else:
-        conversation = [{"role": "user", "content": prompt}]
-    model_input = renderer.build_generation_prompt(conversation)
-    sampling_params = types.SamplingParams(
-        max_tokens=args.max_tokens,
+    conversation = prompt if isinstance(prompt, list) else [{"role": "user", "content": prompt}]
+    result = await sample_checkpoint_async(
+        conversation,
+        model_path=args.model_path,
+        model_name=args.model_name or "",
         temperature=args.temperature,
         top_p=args.top_p,
-        stop=renderer.get_stop_sequences(),
+        max_tokens=args.max_tokens,
     )
-    response = await sampling_client.sample_async(prompt=model_input, num_samples=1, sampling_params=sampling_params)
-    raw_output = tokenizer.decode(response.sequences[0].tokens)
-    parsed_message, success = renderer.parse_response(response.sequences[0].tokens)
-    if not success:
-        raise RuntimeError("Renderer failed to parse the model response.")
-    thinking_parts, text_parts = split_message_content(parsed_message.get("content"))
     return {
-        "model_name": model_name,
-        "model_path": args.model_path,
-        "renderer_name": renderer_name,
+        "model_name": result.model_name,
+        "model_path": result.model_path,
+        "renderer_name": result.renderer_name,
         "prompt_meta": prompt_meta,
-        "parsed_message": parsed_message,
-        "raw_output": raw_output,
-        "thinking_trace": "\n".join(part for part in thinking_parts if part.strip()).strip(),
-        "visible_answer": "\n".join(part for part in text_parts if part.strip()).strip(),
+        "parsed_message": result.parsed_message,
+        "raw_output": result.raw_output,
+        "thinking_trace": result.thinking_trace,
+        "visible_answer": result.visible_answer,
     }
-
-
-def split_message_content(content: Any) -> tuple[list[str], list[str]]:
-    if isinstance(content, str):
-        return [], [content]
-    thinking_parts: list[str] = []
-    text_parts: list[str] = []
-    if isinstance(content, list):
-        for part in content:
-            if not isinstance(part, dict):
-                continue
-            part_type = part.get("type")
-            if part_type == "thinking":
-                thinking_parts.append(str(part.get("thinking", "")))
-            elif part_type == "text":
-                text_parts.append(str(part.get("text", "")))
-    return thinking_parts, text_parts
 
 
 def format_prompt(prompt: Any) -> str:

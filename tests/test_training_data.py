@@ -192,3 +192,20 @@ def test_pair_type_availability_expands_with_difficulty() -> None:
     assert "single_path" in available_pair_types("hard")
     assert "missing_block" in available_pair_types("easy", curriculum_profile="protocol_bootcamp")
     assert "single_path" not in available_pair_types("medium", curriculum_profile="protocol_bootcamp")
+
+
+def test_warmup_examples_rotate_across_multiple_trace_dialects() -> None:
+    variants = []
+    for seed in (10000, 10001, 10002, 10003):
+        example = build_warmup_example(
+            family="countdown",
+            difficulty="medium",
+            seed=seed,
+            split="train",
+        )
+        reasoning = build_parser_completion(example)["reasoning_content"]
+        variants.append(reasoning)
+    assert any("<persona1>" in reasoning for reasoning in variants)
+    assert any("<character name=" in reasoning for reasoning in variants)
+    assert any("<solver>" in reasoning or "<checker>" in reasoning for reasoning in variants)
+    assert any("solver:" in reasoning or "checker:" in reasoning for reasoning in variants)

@@ -1,0 +1,78 @@
+{
+  "public_checkpoint_kept": "tinker://80d6e740-bf17-52ca-a94c-422c67897617:train:0/sampler_weights/final",
+  "repair_run_prefix": "tinker://0935e6fa-9a10-55d8-ac37-597271b371ba:train:0",
+  "target_defect": "weak_disagreement",
+  "baseline_public_metrics": {
+    "fixed_prompt_pack": {
+      "average_reward": 0.614307380952381,
+      "average_disagreement_quality": 0.1975,
+      "average_joint_valid": 0.9,
+      "label_counts": {
+        "answer_drift": 1,
+        "format_break": 1,
+        "premature_reconcile": 3,
+        "shallow_debate": 4,
+        "weak_disagreement": 11
+      }
+    },
+    "protocol_easy_40": {
+      "joint_contract_valid_rate": 0.675,
+      "answer_format_valid_rate": 0.8
+    },
+    "debate_vs_monologue_medium_100": {
+      "reward_delta": 0.3643088790032627,
+      "joint_valid_delta": 0.12,
+      "disagreement_quality_delta": 0.33974999999999994
+    }
+  },
+  "repair_candidates": [
+    {
+      "checkpoint": "tinker://0935e6fa-9a10-55d8-ac37-597271b371ba:train:0/sampler_weights/000001",
+      "fixed_prompt_pack": {
+        "average_reward": 0.7375121233974359,
+        "average_disagreement_quality": 0.3325,
+        "average_joint_valid": 1.0
+      },
+      "protocol_easy_40": {
+        "joint_contract_valid_rate": 0.75,
+        "answer_format_valid_rate": 0.85
+      },
+      "debate_vs_monologue_medium_100": {
+        "reward_delta": 0.3155884953412366,
+        "joint_valid_delta": -0.030000000000000027,
+        "disagreement_quality_delta": 0.29374999999999996
+      },
+      "promotion_decision": "reject",
+      "reasons": [
+        "medium reward delta regressed by about 0.049 from the public checkpoint",
+        "medium joint-valid delta became negative"
+      ]
+    },
+    {
+      "checkpoint": "tinker://0935e6fa-9a10-55d8-ac37-597271b371ba:train:0/sampler_weights/000002",
+      "protocol_easy_40": {
+        "joint_contract_valid_rate": 0.65,
+        "answer_format_valid_rate": 0.75
+      },
+      "debate_vs_monologue_medium_100": {
+        "reward_delta": 0.3003183253695745,
+        "task_score_delta": -0.021270165107673433,
+        "joint_valid_delta": -0.050000000000000044,
+        "disagreement_quality_delta": 0.30699999999999994
+      },
+      "promotion_decision": "reject",
+      "reasons": [
+        "easy reliability was weaker than checkpoint 000001",
+        "medium reward delta regressed by about 0.064 from the public checkpoint",
+        "medium task score delta turned negative",
+        "medium joint-valid delta became more negative"
+      ]
+    }
+  ],
+  "outside_background_note": {
+    "macro_native_score_delta": 0.050000000000000044,
+    "macro_reasoning_contract_valid_delta": -0.65,
+    "release_use": "background_only"
+  },
+  "final_decision": "keep_public_checkpoint"
+}

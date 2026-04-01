@@ -1,0 +1,139 @@
+{
+  "version": 1,
+  "dialect_cycle": [
+    "persona_think",
+    "character_step",
+    "named_tag",
+    "speaker_lines"
+  ],
+  "blocks": [
+    {
+      "family": "countdown",
+      "difficulty": "medium",
+      "institution": "flat",
+      "seed_start": 410100,
+      "train_patterns": [
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback",
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback",
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback"
+      ],
+      "val_patterns": [
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback"
+      ],
+      "lock_patterns": [
+        "alternative_route_challenge",
+        "verification_pushback",
+        "stale_evidence_challenge",
+        "assumption_challenge"
+      ]
+    },
+    {
+      "family": "countdown",
+      "difficulty": "hard",
+      "institution": "hierarchical",
+      "seed_start": 420100,
+      "train_patterns": [
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback",
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback",
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback"
+      ],
+      "val_patterns": [
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback"
+      ],
+      "lock_patterns": [
+        "alternative_route_challenge",
+        "verification_pushback",
+        "stale_evidence_challenge",
+        "assumption_challenge"
+      ]
+    },
+    {
+      "family": "evidence",
+      "difficulty": "medium",
+      "institution": "flat",
+      "seed_start": 430100,
+      "train_patterns": [
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback",
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback",
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback"
+      ],
+      "val_patterns": [
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback"
+      ],
+      "lock_patterns": [
+        "alternative_route_challenge",
+        "verification_pushback",
+        "stale_evidence_challenge",
+        "assumption_challenge"
+      ]
+    },
+    {
+      "family": "evidence",
+      "difficulty": "hard",
+      "institution": "hierarchical",
+      "seed_start": 440100,
+      "train_patterns": [
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback",
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback",
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback"
+      ],
+      "val_patterns": [
+        "assumption_challenge",
+        "alternative_route_challenge",
+        "stale_evidence_challenge",
+        "verification_pushback"
+      ],
+      "lock_patterns": [
+        "alternative_route_challenge",
+        "verification_pushback",
+        "stale_evidence_challenge",
+        "assumption_challenge"
+      ]
+    }
+  ]
+}

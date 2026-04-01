@@ -10,8 +10,6 @@ from typing import Any
 from datasets import Dataset
 
 from .core import (
-    ALLOWED_PERSONALITIES,
-    ALLOWED_ROLES,
     EXPERTISE_BY_FAMILY,
     STYLE_BY_ROLE,
     TASK_NAME_BY_FAMILY,
@@ -371,6 +369,17 @@ def _wrap_trace_payload(payload: dict[str, Any]) -> str:
     if "analysis" in payload:
         return "\n".join(step["content"] for step in payload["analysis"])
 
+    dialect = payload.get("dialect", "persona_think")
+    if dialect == "character_step":
+        return _render_character_step_trace(payload)
+    if dialect == "named_tag":
+        return _render_named_tag_trace(payload)
+    if dialect == "speaker_lines":
+        return _render_speaker_line_trace(payload)
+    return _render_persona_think_trace(payload)
+
+
+def _render_persona_think_trace(payload: dict[str, Any]) -> str:
     persona_lines = []
     for index, persona in enumerate(payload["personas"], start=1):
         persona_lines.append(
@@ -379,20 +388,109 @@ def _wrap_trace_payload(payload: dict[str, Any]) -> str:
             f"Expertise: {persona['expertise']}\n"
             f"Style: {persona.get('style') or STYLE_BY_ROLE.get(persona['role'], '')}</persona{index}>"
         )
+    ordinal_by_speaker = {persona["id"]: index for index, persona in enumerate(payload["personas"], start=1)}
     conversation_lines = []
     for turn in payload["debate"]:
-        speaker = turn["speaker"]
-        ordinal = int(str(speaker).replace("P", ""))
+        ordinal = ordinal_by_speaker.get(turn["speaker"], 1)
         conversation_lines.append(f"<think{ordinal}>{turn['content']}</think{ordinal}>")
+    return _wrap_common_trace("\n".join(persona_lines), "\n".join(conversation_lines), payload["group_solution"])
+
+
+def _render_character_step_trace(payload: dict[str, Any]) -> str:
+    speaker_labels = _speaker_labels(payload["personas"])
+    persona_lines = []
+    for persona in payload["personas"]:
+        label = speaker_labels[persona["id"]]
+        persona_lines.append(
+            f'<character name="{label}" role="{persona["role"]}" personality="{persona["personality"]}" '
+            f'expertise="{persona["expertise"]}" style="{persona.get("style") or STYLE_BY_ROLE.get(persona["role"], "")}"/>'
+        )
+    conversation_lines = []
+    for index, turn in enumerate(payload["debate"], start=1):
+        speaker = speaker_labels.get(turn["speaker"], f"voice_{index}")
+        conversation_lines.append(
+            f'<step speaker="{speaker}" step="{index}" action="{turn.get("act", "propose")}">{turn["content"]}</step>'
+        )
+    return _wrap_common_trace("\n".join(persona_lines), "\n".join(conversation_lines), payload["group_solution"])
+
+
+def _render_named_tag_trace(payload: dict[str, Any]) -> str:
+    speaker_labels = _speaker_labels(payload["personas"])
+    persona_lines = []
+    for persona in payload["personas"]:
+        label = speaker_labels[persona["id"]]
+        persona_lines.append(
+            f'<character name="{label}">Role: {persona["role"]}. Personality: {persona["personality"]}. '
+            f'Expertise: {persona["expertise"]}. Style: {persona.get("style") or STYLE_BY_ROLE.get(persona["role"], "")}.</character>'
+        )
+    conversation_lines = []
+    for turn in payload["debate"]:
+        label = speaker_labels.get(turn["speaker"], turn["speaker"])
+        tag = _tagify_label(label)
+        conversation_lines.append(f"<{tag}>{turn['content']}</{tag}>")
+    return _wrap_common_trace("\n".join(persona_lines), "\n".join(conversation_lines), payload["group_solution"])
+
+
+def _render_speaker_line_trace(payload: dict[str, Any]) -> str:
+    speaker_labels = _speaker_labels(payload["personas"])
+    persona_lines = []
+    for persona in payload["personas"]:
+        label = speaker_labels[persona["id"]]
+        descriptor = f"{persona['role']} | {persona['expertise']} | {persona.get('style') or STYLE_BY_ROLE.get(persona['role'], '')}"
+        persona_lines.append(f"{label}: {descriptor}")
+    conversation_lines = []
+    for turn in payload["debate"]:
+        label = speaker_labels.get(turn["speaker"], turn["speaker"])
+        conversation_lines.append(f"{label}: {turn['content']}")
+    return _wrap_common_trace("\n".join(persona_lines), "\n".join(conversation_lines), payload["group_solution"])
+
+
+def _wrap_common_trace(cast_text: str, conversation_text: str, group_solution: str) -> str:
     return (
         "<cast_of_characters>\n"
-        + "\n".join(persona_lines)
+        + cast_text
         + "\n</cast_of_characters>\n"
         + "<conversation>\n"
-        + "\n".join(conversation_lines)
+        + conversation_text
         + "\n</conversation>\n"
-        + f"<group_solution>{payload['group_solution']}</group_solution>"
+        + f"<group_solution>{group_solution}</group_solution>"
     )
+
+
+def _speaker_labels(personas: list[dict[str, Any]]) -> dict[str, str]:
+    labels: dict[str, str] = {}
+    role_names = {
+        "brainstormer": "solver",
+        "planner": "planner",
+        "analyst": "analyst",
+        "devils_advocate": "skeptic",
+        "skeptic": "skeptic",
+        "contrarian": "contrarian",
+        "violation_hunter": "auditor",
+        "verifier": "checker",
+        "synthesizer": "synthesizer",
+        "editor": "editor",
+    }
+    used: set[str] = set()
+    for index, persona in enumerate(personas, start=1):
+        base = role_names.get(persona["role"], f"voice_{index}")
+        label = base
+        suffix = 2
+        while label in used:
+            label = f"{base}_{suffix}"
+            suffix += 1
+        used.add(label)
+        labels[persona["id"]] = label
+    return labels
+
+
+def _tagify_label(label: str) -> str:
+    cleaned = "".join(ch.lower() if ch.isalnum() else "_" for ch in label).strip("_")
+    if not cleaned:
+        return "voice"
+    if cleaned[0].isdigit():
+        cleaned = f"voice_{cleaned}"
+    return cleaned
 
 
 def _prompt_variant_header(trace_prompt_variant: str) -> str:
@@ -411,6 +509,7 @@ def _prompt_variant_reasoning_rules(trace_prompt_variant: str) -> str:
             "Reasoning trace rules:\n"
             "- Use the exposed reasoning stream / <think> as scratch space.\n"
             "- Inside that stream, include exactly one <cast_of_characters> block, one <conversation> block, and one <group_solution> block.\n"
+            "- Inside those blocks, any clear multi-voice dialect is acceptable: persona tags, character tags, step tags, named speaker tags, or simple speaker lines.\n"
             "- Do not write any extra tags outside that paper-style structure.\n"
             "- Keep the reasoning task-focused and concise."
         )
@@ -493,8 +592,6 @@ def _build_prompt(
         else "Use a single-voice chain of thought inside the reasoning stream."
     )
     allowed_expertise = ", ".join(EXPERTISE_BY_FAMILY[family])
-    allowed_roles = ", ".join(ALLOWED_ROLES)
-    allowed_personalities = ", ".join(ALLOWED_PERSONALITIES)
     turn_low, turn_high = difficulty_turn_range(difficulty, max_debate_turns)
     reasoning_contract = _reasoning_contract_example(
         family=family,
@@ -502,10 +599,9 @@ def _build_prompt(
     )
     answer_contract = _answer_example(family)
     role_metadata = (
-        f"- Allowed roles: {allowed_roles}\n"
-        f"- Allowed personalities: {allowed_personalities}\n"
-        f"- Allowed expertise for this family: {allowed_expertise}\n"
-        "- Each persona block must follow: Role / Personality / Expertise / Style.\n"
+        "- Use at least two distinct voices with meaningfully different perspectives.\n"
+        f"- Family-relevant expertise is encouraged, especially around: {allowed_expertise}\n"
+        "- Voice metadata is flexible. You may use explicit Role / Personality / Expertise / Style fields, lighter character labels, or short speaker descriptors.\n"
         if trace_mode == "debate"
         else ""
     )

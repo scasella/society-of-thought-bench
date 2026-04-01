@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import inspect
 import json
 import os
 import random
@@ -10,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from society_of_thought_bench.training_data import DATA_ROOT, OUTPUT_ROOT, SFT_RUN_DEFAULTS
+from society_of_thought_bench.tinker_renderers import get_renderer, patch_tinker_cookbook_renderers
 
 
 def main() -> None:
@@ -35,12 +37,14 @@ def main() -> None:
     args = parser.parse_args()
 
     log_path = args.log_path or default_log_path("sft", args.model_name)
+    resolved_load_checkpoint_path = as_training_checkpoint_path(args.load_checkpoint_path)
     summary = {
         "train_file": str(args.train_file),
         "val_file": str(args.val_file),
         "model_name": args.model_name,
         "renderer_name": args.renderer_name,
         "load_checkpoint_path": args.load_checkpoint_path,
+        "resolved_load_checkpoint_path": resolved_load_checkpoint_path,
         "log_path": str(log_path),
         "lora_rank": args.lora_rank,
         "learning_rate": args.learning_rate,
@@ -71,6 +75,8 @@ def main() -> None:
         ChatDatasetBuilderCommonConfig,
         SupervisedDataset,
     )
+
+    patch_tinker_cookbook_renderers()
 
     class ListSupervisedDataset(SupervisedDataset):
         def __init__(self, *, rows: list[dict[str, Any]], batch_size: int, map_fn) -> None:
@@ -107,14 +113,10 @@ def main() -> None:
         @property
         def renderer(self):
             if self._renderer is None:
-                from tinker_cookbook import renderers as tk_renderers
                 from tinker_cookbook.tokenizer_utils import get_tokenizer
 
                 tokenizer = get_tokenizer(self.common_config.model_name_for_tokenizer)
-                self._renderer = tk_renderers.get_renderer(
-                    self.common_config.renderer_name,
-                    tokenizer,
-                )
+                self._renderer = get_renderer(self.common_config.renderer_name, tokenizer)
             return self._renderer
 
         def __call__(self):
@@ -155,22 +157,24 @@ def main() -> None:
     )
 
     cli_utils.check_log_dir(str(log_path), behavior_if_exists="ask")
-    config = supervised_train.Config(
-        log_path=str(log_path),
-        model_name=args.model_name,
-        load_checkpoint_path=args.load_checkpoint_path,
-        renderer_name=args.renderer_name,
-        dataset_builder=dataset_builder,
-        learning_rate=args.learning_rate,
-        lr_schedule=args.lr_schedule,
-        num_epochs=args.num_epochs,
-        lora_rank=args.lora_rank,
-        save_every=args.save_every,
-        eval_every=args.eval_every,
-        wandb_project=args.wandb_project,
-        wandb_name=args.wandb_name,
-        max_steps=args.max_steps,
-    )
+    config_kwargs: dict[str, Any] = {
+        "log_path": str(log_path),
+        "model_name": args.model_name,
+        "load_checkpoint_path": resolved_load_checkpoint_path,
+        "renderer_name": args.renderer_name,
+        "dataset_builder": dataset_builder,
+        "learning_rate": args.learning_rate,
+        "lr_schedule": args.lr_schedule,
+        "num_epochs": args.num_epochs,
+        "lora_rank": args.lora_rank,
+        "save_every": args.save_every,
+        "eval_every": args.eval_every,
+        "wandb_project": args.wandb_project,
+        "wandb_name": args.wandb_name,
+        "max_steps": args.max_steps,
+    }
+    supported = inspect.signature(supervised_train.Config).parameters
+    config = supervised_train.Config(**{k: v for k, v in config_kwargs.items() if k in supported and v is not None})
     asyncio.run(supervised_train.main(config))
 
 
@@ -178,6 +182,14 @@ def default_log_path(stage: str, model_name: str) -> Path:
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     model_slug = model_name.replace("/", "--")
     return OUTPUT_ROOT / stage / f"{stamp}-{model_slug}"
+
+
+def as_training_checkpoint_path(path: str | None) -> str | None:
+    if not path:
+        return path
+    if "/sampler_weights/" in path:
+        return path.replace("/sampler_weights/", "/weights/", 1)
+    return path
 
 
 def _load_jsonl(path: Path) -> list[dict]:

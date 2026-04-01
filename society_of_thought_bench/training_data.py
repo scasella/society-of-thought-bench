@@ -11,6 +11,7 @@ from typing import Any
 from .core import STYLE_BY_ROLE, clamp, ordered_unique
 from .families import build_example
 from .parser import SocietyOfThoughtParser
+from .tinker_renderers import CUSTOM_QWEN3_RENDERER_NAME
 
 ENV_ROOT = Path(__file__).resolve().parents[1]
 DATA_ROOT = ENV_ROOT / "data" / "tinker"
@@ -25,7 +26,7 @@ DEFAULT_OBJECTIVE_PROFILE = "debate_primary"
 DEFAULT_COUNTDOWN_REWARD_PROFILE = "benchmark"
 
 DEFAULT_SFT_MODEL = "Qwen/Qwen3-30B-A3B"
-DEFAULT_RENDERER_NAME = "qwen3"
+DEFAULT_RENDERER_NAME = CUSTOM_QWEN3_RENDERER_NAME
 
 SFT_RUN_DEFAULTS = {
     "model_name": DEFAULT_SFT_MODEL,
@@ -58,7 +59,23 @@ DPO_RUN_DEFAULTS = {
 CURRICULUM_PROFILES = (
     "debate_primary",
     "protocol_bootcamp",
+    "external_core_debate",
+    "external_core_monologue",
+    "external_bridge_debate",
+    "external_proxy_focus_debate",
+    "external_proxy_focus_monologue",
 )
+
+EXTERNAL_DEBATE_CURRICULUM_PROFILES = {
+    "external_core_debate",
+    "external_bridge_debate",
+    "external_proxy_focus_debate",
+}
+
+EXTERNAL_MONOLOGUE_CURRICULUM_PROFILES = {
+    "external_core_monologue",
+    "external_proxy_focus_monologue",
+}
 
 WARMUP_MIX_WEIGHTS_BY_PROFILE = {
     "debate_primary": {
@@ -74,8 +91,48 @@ WARMUP_MIX_WEIGHTS_BY_PROFILE = {
         ("countdown", "medium"): 0.30,
         ("countdown", "hard"): 0.05,
         ("evidence", "easy"): 0.15,
-        ("evidence", "medium"): 0.30,
+        ("evidence", "medium",): 0.30,
         ("evidence", "hard"): 0.05,
+    },
+    "external_core_debate": {
+        ("countdown", "easy"): 0.10,
+        ("countdown", "medium"): 0.25,
+        ("countdown", "hard"): 0.15,
+        ("evidence", "easy"): 0.10,
+        ("evidence", "medium"): 0.25,
+        ("evidence", "hard"): 0.15,
+    },
+    "external_core_monologue": {
+        ("countdown", "easy"): 0.10,
+        ("countdown", "medium"): 0.25,
+        ("countdown", "hard"): 0.15,
+        ("evidence", "easy"): 0.10,
+        ("evidence", "medium"): 0.25,
+        ("evidence", "hard"): 0.15,
+    },
+    "external_bridge_debate": {
+        ("countdown", "easy"): 0.10,
+        ("countdown", "medium"): 0.25,
+        ("countdown", "hard"): 0.15,
+        ("evidence", "easy"): 0.10,
+        ("evidence", "medium"): 0.25,
+        ("evidence", "hard"): 0.15,
+    },
+    "external_proxy_focus_debate": {
+        ("countdown", "easy"): 0.05,
+        ("countdown", "medium"): 0.30,
+        ("countdown", "hard"): 0.15,
+        ("evidence", "easy"): 0.05,
+        ("evidence", "medium"): 0.30,
+        ("evidence", "hard"): 0.15,
+    },
+    "external_proxy_focus_monologue": {
+        ("countdown", "easy"): 0.05,
+        ("countdown", "medium"): 0.30,
+        ("countdown", "hard"): 0.15,
+        ("evidence", "easy"): 0.05,
+        ("evidence", "medium"): 0.30,
+        ("evidence", "hard"): 0.15,
     },
 }
 
@@ -94,6 +151,115 @@ DPO_PAIR_TYPE_WEIGHTS_BY_PROFILE = {
         "redundant_personas": 0.10,
         "unresolved_conflict": 0.10,
         "single_path": 0.05,
+    },
+    "external_bridge_debate": {
+        "real_disagreement": 0.20,
+        "redundant_personas": 0.20,
+        "single_path": 0.20,
+        "unresolved_conflict": 0.20,
+        "verbose_filler": 0.20,
+    },
+    "external_proxy_focus_debate": {
+        "real_disagreement": 0.20,
+        "redundant_personas": 0.20,
+        "single_path": 0.20,
+        "unresolved_conflict": 0.20,
+        "verbose_filler": 0.20,
+    },
+    "external_proxy_focus_monologue": {
+        "real_disagreement": 0.20,
+        "redundant_personas": 0.20,
+        "single_path": 0.20,
+        "unresolved_conflict": 0.20,
+        "verbose_filler": 0.20,
+    },
+}
+
+EXTERNAL_SFT_SOURCE_WEIGHTS_BY_PROFILE = {
+    "external_core_debate": {
+        "internal_sot": 0.40,
+        "gsm8k_train": 0.20,
+        "mmlu_pro_non_eval": 0.20,
+        "mmlu_pro_stem": 0.10,
+        "ifeval_synthetic": 0.10,
+    },
+    "external_core_monologue": {
+        "internal_sot": 0.40,
+        "gsm8k_train": 0.20,
+        "mmlu_pro_non_eval": 0.20,
+        "mmlu_pro_stem": 0.10,
+        "ifeval_synthetic": 0.10,
+    },
+    "external_bridge_debate": {
+        "internal_sot": 0.55,
+        "gsm8k_train": 0.10,
+        "mmlu_pro_non_eval": 0.15,
+        "mmlu_pro_stem": 0.10,
+        "ifeval_synthetic": 0.10,
+    },
+    "external_proxy_focus_debate": {
+        "internal_sot": 0.30,
+        "gsm8k_train": 0.05,
+        "mmlu_pro_non_eval": 0.10,
+        "mmlu_pro_stem": 0.35,
+        "ifeval_synthetic": 0.20,
+    },
+    "external_proxy_focus_monologue": {
+        "internal_sot": 0.30,
+        "gsm8k_train": 0.05,
+        "mmlu_pro_non_eval": 0.10,
+        "mmlu_pro_stem": 0.35,
+        "ifeval_synthetic": 0.20,
+    },
+}
+
+EXTERNAL_DPO_COMPONENT_WEIGHTS_BY_PROFILE = {
+    "external_core_debate": {
+        "internal_debate_quality": 0.45,
+        "external_answer_discipline": 0.10,
+        "external_reasoning_structure": 0.45,
+    },
+    "external_core_monologue": {
+        "internal_monologue_structure": 0.30,
+        "external_answer_discipline": 0.40,
+        "external_monologue_structure": 0.30,
+    },
+    "external_bridge_debate": {
+        "internal_debate_quality": 0.45,
+        "external_answer_discipline": 0.10,
+        "external_reasoning_structure": 0.45,
+    },
+    "external_proxy_focus_debate": {
+        "internal_debate_quality": 0.45,
+        "external_answer_discipline": 0.10,
+        "external_reasoning_structure": 0.45,
+    },
+    "external_proxy_focus_monologue": {
+        "internal_monologue_structure": 0.30,
+        "external_answer_discipline": 0.40,
+        "external_monologue_structure": 0.30,
+    },
+}
+
+EXTERNAL_CORE_BENCHMARKS = (
+    "gsm8k",
+    "mmlu_pro",
+    "gpqa",
+    "ifeval",
+)
+
+EXTERNAL_ACCEPTANCE_THRESHOLDS = {
+    "same_checkpoint": {
+        "native_score_delta": 0.03,
+        "non_negative_native_score_benchmarks": 3,
+        "reasoning_contract_valid_delta": -0.10,
+        "visible_answer_valid_delta": -0.05,
+    },
+    "debate_vs_control": {
+        "native_score_delta": 0.02,
+        "non_negative_native_score_benchmarks": 3,
+        "reasoning_contract_valid_delta": -0.10,
+        "visible_answer_valid_delta": -0.05,
     },
 }
 
@@ -285,6 +451,58 @@ RL_STAGE_CONFIGS: dict[str, dict[str, Any]] = {
         "eval_every": 0,
         "max_steps": 48,
     },
+    "control_all_medium": {
+        "vf_env_id": "society-of-thought-bench",
+        "vf_env_args": {
+            "family": "all",
+            "difficulty": "medium",
+            "institution": DEFAULT_INSTITUTION,
+            "trace_mode": "monologue",
+            "trace_prompt_variant": DEFAULT_TRACE_PROMPT_VARIANT,
+            "countdown_reward_profile": DEFAULT_COUNTDOWN_REWARD_PROFILE,
+            "objective_profile": "balanced",
+            "debate_reward_weight": 0.0,
+        },
+        "model_name": DEFAULT_SFT_MODEL,
+        "renderer_name": DEFAULT_RENDERER_NAME,
+        "lora_rank": 32,
+        "group_size": 8,
+        "groups_per_batch": 16,
+        "learning_rate": 6e-6,
+        "max_tokens": 1024,
+        "temperature": 0.8,
+        "kl_penalty_coef": 0.03,
+        "num_substeps": 1,
+        "save_every": 16,
+        "eval_every": 0,
+        "max_steps": 64,
+    },
+    "control_all_hard": {
+        "vf_env_id": "society-of-thought-bench",
+        "vf_env_args": {
+            "family": "all",
+            "difficulty": "hard",
+            "institution": DEFAULT_INSTITUTION,
+            "trace_mode": "monologue",
+            "trace_prompt_variant": DEFAULT_TRACE_PROMPT_VARIANT,
+            "countdown_reward_profile": DEFAULT_COUNTDOWN_REWARD_PROFILE,
+            "objective_profile": "balanced",
+            "debate_reward_weight": 0.0,
+        },
+        "model_name": DEFAULT_SFT_MODEL,
+        "renderer_name": DEFAULT_RENDERER_NAME,
+        "lora_rank": 32,
+        "group_size": 8,
+        "groups_per_batch": 16,
+        "learning_rate": 6e-6,
+        "max_tokens": 1024,
+        "temperature": 0.8,
+        "kl_penalty_coef": 0.03,
+        "num_substeps": 1,
+        "save_every": 16,
+        "eval_every": 0,
+        "max_steps": 48,
+    },
 }
 
 GATE_THRESHOLDS: dict[str, dict[str, dict[str, float]]] = {
@@ -361,6 +579,13 @@ PERSONA_LAYOUTS = {
     ),
 }
 
+TRACE_DIALECTS = (
+    "persona_think",
+    "character_step",
+    "named_tag",
+    "speaker_lines",
+)
+
 
 @dataclass(slots=True)
 class GateCheck:
@@ -404,6 +629,26 @@ def dpo_mix_counts(total: int, curriculum_profile: str = "debate_primary") -> di
 
 def pair_type_counts(total: int, curriculum_profile: str = "debate_primary") -> dict[str, int]:
     return _weighted_counts(total, pair_type_profile_weights(curriculum_profile))
+
+
+def external_sft_source_weights(curriculum_profile: str) -> dict[str, float]:
+    if curriculum_profile not in EXTERNAL_SFT_SOURCE_WEIGHTS_BY_PROFILE:
+        raise KeyError(f"Unknown external SFT curriculum_profile: {curriculum_profile}")
+    return EXTERNAL_SFT_SOURCE_WEIGHTS_BY_PROFILE[curriculum_profile]
+
+
+def external_sft_source_counts(total: int, curriculum_profile: str) -> dict[str, int]:
+    return _weighted_counts(total, external_sft_source_weights(curriculum_profile))
+
+
+def external_dpo_component_weights(curriculum_profile: str) -> dict[str, float]:
+    if curriculum_profile not in EXTERNAL_DPO_COMPONENT_WEIGHTS_BY_PROFILE:
+        raise KeyError(f"Unknown external DPO curriculum_profile: {curriculum_profile}")
+    return EXTERNAL_DPO_COMPONENT_WEIGHTS_BY_PROFILE[curriculum_profile]
+
+
+def external_dpo_component_counts(total: int, curriculum_profile: str) -> dict[str, int]:
+    return _weighted_counts(total, external_dpo_component_weights(curriculum_profile))
 
 
 def suite_defaults(name: str) -> dict[str, Any]:
@@ -470,6 +715,7 @@ def build_warmup_example(
         institution=resolved_institution,
         seed=seed,
     )
+    trace_payload["dialect"] = select_trace_dialect(seed)
     answer_payload = _build_teacher_answer_payload(family=family, task=task)
     wrapped_trace = _wrap_trace_payload(trace_payload)
     final_answer_text = answer_payload
@@ -540,6 +786,7 @@ def build_dpo_pair_example(
         institution=resolved_institution,
         seed=seed,
     )
+    chosen_payload["dialect"] = select_trace_dialect(seed)
     answer_payload = _build_teacher_answer_payload(family=family, task=task)
     final_answer_text = answer_payload
     chosen_trace = _wrap_trace_payload(chosen_payload)
@@ -580,6 +827,21 @@ def build_dpo_pair_example(
 def build_parser_completion(example: dict[str, Any]) -> dict[str, Any]:
     assistant = example["messages"][-1]
     content_parts = assistant["content"]
+    if isinstance(content_parts, str):
+        text = content_parts
+        if "<think>" in text and "</think>" in text:
+            _, after_open = text.split("<think>", 1)
+            reasoning_text, answer_text = after_open.split("</think>", 1)
+            return {
+                "role": "assistant",
+                "content": answer_text.strip(),
+                "reasoning_content": reasoning_text.strip(),
+            }
+        return {
+            "role": "assistant",
+            "content": text,
+            "reasoning_content": "",
+        }
     reasoning_part = next(part for part in content_parts if part["type"] == "thinking")
     text_part = next(part for part in content_parts if part["type"] == "text")
     return {
@@ -587,6 +849,10 @@ def build_parser_completion(example: dict[str, Any]) -> dict[str, Any]:
         "content": text_part["text"],
         "reasoning_content": reasoning_part["thinking"],
     }
+
+
+def select_trace_dialect(seed: int) -> str:
+    return TRACE_DIALECTS[seed % len(TRACE_DIALECTS)]
 
 
 def validate_warmup_example(example: dict[str, Any]) -> None:

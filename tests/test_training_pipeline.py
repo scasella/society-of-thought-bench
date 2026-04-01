@@ -105,7 +105,7 @@ def test_sft_and_dpo_dry_runs_render_configs(tmp_path: Path) -> None:
     assert dpo_proc.returncode == 0, dpo_proc.stderr
     sft_summary = json.loads(sft_proc.stdout)
     dpo_summary = json.loads(dpo_proc.stdout)
-    assert sft_summary["renderer_name"] == "qwen3"
+    assert sft_summary["renderer_name"] == "society_of_thought_qwen3"
     assert dpo_summary["dpo_beta"] == 0.1
 
 

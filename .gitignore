@@ -8,3 +8,10 @@ artifacts/
 data/
 dist/
 outputs/
+
+!data/
+data/*
+!data/tinker/
+data/tinker/*
+!data/tinker/disagreement_gold_v1/
+!data/tinker/disagreement_gold_v1/**

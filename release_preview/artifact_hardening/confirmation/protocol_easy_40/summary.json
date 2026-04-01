@@ -1,0 +1,59 @@
+{
+  "examples": 40,
+  "average_reward": 0.4822018005952381,
+  "joint_contract_valid_rate": 0.675,
+  "task_and_joint_valid_rate": 0.25,
+  "near_miss_rate": 0.025,
+  "protocol_valid_rate": 0.675,
+  "trace_format_valid_rate": 0.675,
+  "answer_format_valid_rate": 0.8,
+  "average_task_score": 0.572582251082251,
+  "behavior_coverage": 0.6,
+  "persona_diversity": 0.6227430555555555,
+  "interaction_score": 0.4740595238095238,
+  "debate_relevance": 0.5085416666666667,
+  "disagreement_quality": 0.06375,
+  "question_answering_count": 0.65,
+  "perspective_shift_count": 0.0,
+  "conflict_of_perspectives_count": 0.325,
+  "reconciliation_count": 0.05,
+  "challenge_response_pair_count": 0.175,
+  "alternative_path_count": 0.0,
+  "reconcile_link_count": 0.05,
+  "env_args": {
+    "family": "all",
+    "difficulty": "easy",
+    "institution": "auto",
+    "trace_mode": "debate",
+    "trace_prompt_variant": "official",
+    "objective_profile": "debate_primary"
+  },
+  "model_name": "Qwen/Qwen3-30B-A3B",
+  "model_path": "tinker://80d6e740-bf17-52ca-a94c-422c67897617:train:0/sampler_weights/final",
+  "renderer_name": "society_of_thought_qwen3",
+  "gate": {
+    "stage": "debate_primary",
+    "suite": "protocol_easy_gate",
+    "passed": false,
+    "checks": [
+      {
+        "metric": "joint_contract_valid_rate",
+        "actual": 0.675,
+        "threshold": 0.95,
+        "passed": false
+      },
+      {
+        "metric": "answer_format_valid_rate",
+        "actual": 0.8,
+        "threshold": 0.98,
+        "passed": false
+      },
+      {
+        "metric": "trace_format_valid_rate",
+        "actual": 0.675,
+        "threshold": 0.98,
+        "passed": false
+      }
+    ]
+  }
+}

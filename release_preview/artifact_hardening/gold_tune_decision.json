@@ -1,0 +1,130 @@
+{
+  "public_checkpoint_kept": "tinker://80d6e740-bf17-52ca-a94c-422c67897617:train:0/sampler_weights/final",
+  "gold_tune_run_prefix": "tinker://b9a5c3e0-4407-51ea-99de-dccf6cf638f0:train:0",
+  "evaluated_checkpoints": [
+    "tinker://b9a5c3e0-4407-51ea-99de-dccf6cf638f0:train:0/sampler_weights/000001",
+    "tinker://b9a5c3e0-4407-51ea-99de-dccf6cf638f0:train:0/sampler_weights/000002"
+  ],
+  "promotion_rule": {
+    "prompt_pack_weak_disagreement_drop_fraction": 0.3,
+    "locked_gold_disagreement_improvement": 0.08,
+    "easy_joint_valid_floor": 0.675,
+    "easy_answer_valid_floor": 0.8,
+    "max_medium_reward_delta_drop": 0.03,
+    "min_medium_joint_valid_delta": 0.12
+  },
+  "baseline_public_metrics": {
+    "fixed_prompt_pack": {
+      "average_reward": 0.614307380952381,
+      "average_disagreement_quality": 0.19749999999999998,
+      "average_joint_valid": 0.9,
+      "weak_disagreement_count": 11,
+      "label_counts": {
+        "premature_reconcile": 3,
+        "weak_disagreement": 11,
+        "format_break": 1,
+        "answer_drift": 1,
+        "shallow_debate": 4
+      }
+    },
+    "locked_gold_eval": {
+      "average_reward": 0.6772229564232303,
+      "average_disagreement_quality": 0.44375,
+      "average_joint_valid": 0.875,
+      "weak_disagreement_count": 5
+    },
+    "protocol_easy_40": {
+      "joint_contract_valid_rate": 0.675,
+      "answer_format_valid_rate": 0.8
+    },
+    "debate_vs_monologue_medium_100": {
+      "reward_delta": 0.3643088790032627,
+      "joint_valid_delta": 0.12,
+      "disagreement_quality_delta": 0.33974999999999994
+    }
+  },
+  "candidates": [
+    {
+      "checkpoint": "tinker://b9a5c3e0-4407-51ea-99de-dccf6cf638f0:train:0/sampler_weights/000001",
+      "fixed_prompt_pack": {
+        "average_reward": 0.5736419047619048,
+        "average_disagreement_quality": 0.2825,
+        "average_joint_valid": 0.8,
+        "weak_disagreement_count": 8,
+        "weak_disagreement_drop_fraction": 0.2727272727272727,
+        "label_counts": {
+          "answer_drift": 3,
+          "weak_disagreement": 8,
+          "shallow_debate": 4,
+          "premature_reconcile": 4,
+          "format_break": 1
+        }
+      },
+      "locked_gold_eval": {
+        "average_reward": 0.7173664080710955,
+        "average_disagreement_quality": 0.39375,
+        "average_joint_valid": 0.9375,
+        "weak_disagreement_count": 6,
+        "disagreement_delta_vs_public": -0.05
+      },
+      "protocol_easy_40": {
+        "joint_contract_valid_rate": 0.6,
+        "answer_format_valid_rate": 0.725
+      },
+      "debate_vs_monologue_medium_100": {
+        "reward_delta": 0.3646496090428719,
+        "joint_valid_delta": 0.08000000000000007,
+        "disagreement_quality_delta": 0.37575
+      },
+      "promotion_decision": "reject",
+      "failed_checks": [
+        "prompt_pack_weak_disagreement_drop_fraction",
+        "locked_gold_disagreement_improvement",
+        "easy_joint_valid_floor",
+        "easy_answer_valid_floor",
+        "min_medium_joint_valid_delta"
+      ]
+    },
+    {
+      "checkpoint": "tinker://b9a5c3e0-4407-51ea-99de-dccf6cf638f0:train:0/sampler_weights/000002",
+      "fixed_prompt_pack": {
+        "average_reward": 0.6095534970238095,
+        "average_disagreement_quality": 0.30999999999999994,
+        "average_joint_valid": 0.85,
+        "weak_disagreement_count": 9,
+        "weak_disagreement_drop_fraction": 0.18181818181818182,
+        "label_counts": {
+          "answer_drift": 3,
+          "weak_disagreement": 9,
+          "premature_reconcile": 4,
+          "shallow_debate": 4
+        }
+      },
+      "locked_gold_eval": {
+        "average_reward": 0.6971696373893861,
+        "average_disagreement_quality": 0.359375,
+        "average_joint_valid": 0.9375,
+        "weak_disagreement_count": 8,
+        "disagreement_delta_vs_public": -0.08437500000000003
+      },
+      "protocol_easy_40": {
+        "joint_contract_valid_rate": 0.625,
+        "answer_format_valid_rate": 0.7
+      },
+      "debate_vs_monologue_medium_100": {
+        "reward_delta": 0.3718253902653974,
+        "joint_valid_delta": 0.05999999999999994,
+        "disagreement_quality_delta": 0.33749999999999997
+      },
+      "promotion_decision": "reject",
+      "failed_checks": [
+        "prompt_pack_weak_disagreement_drop_fraction",
+        "locked_gold_disagreement_improvement",
+        "easy_joint_valid_floor",
+        "easy_answer_valid_floor",
+        "min_medium_joint_valid_delta"
+      ]
+    }
+  ],
+  "final_decision": "keep_public_checkpoint"
+}

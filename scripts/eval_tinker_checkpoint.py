@@ -126,9 +126,9 @@ async def evaluate_single_suite(
 
     import tinker
     import verifiers as vf
-    from tinker_cookbook import checkpoint_utils, model_info, renderers
     from tinker_cookbook.recipes.verifiers_rl.tinker_openai import TinkerAsyncOpenAIClient
     from tinker_cookbook.tokenizer_utils import get_tokenizer
+    from society_of_thought_bench.tinker_renderers import get_recommended_renderer_name, get_renderer
 
     service = tinker.ServiceClient()
 
@@ -148,12 +148,10 @@ async def evaluate_single_suite(
 
     env = vf.load_environment("society-of-thought-bench", **env_args)
     tokenizer = get_tokenizer(model_name)
-    renderer_name = None
-    if model_path is not None:
-        renderer_name = await checkpoint_utils.get_renderer_name_from_checkpoint_async(service, model_path)
+    renderer_name = getattr(training_run, "renderer_name", None) if model_path is not None else None
     if renderer_name is None:
-        renderer_name = model_info.get_recommended_renderer_name(model_name)
-    renderer = renderers.get_renderer(renderer_name, tokenizer)
+        renderer_name = get_recommended_renderer_name(model_name)
+    renderer = get_renderer(renderer_name, tokenizer)
 
     if model_path:
         sampling = service.create_sampling_client(model_path=model_path, base_model=model_name)

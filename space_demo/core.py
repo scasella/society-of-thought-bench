@@ -8,6 +8,16 @@ from typing import Any
 BEST_CHECKPOINT = "tinker://80d6e740-bf17-52ca-a94c-422c67897617:train:0/sampler_weights/final"
 BASE_MODEL = "Qwen/Qwen3-30B-A3B"
 
+DEFAULT_CHAT_SYSTEM_PROMPT = """You are a research-preview checkpoint trained to show paper-style internal debate in the visible reasoning trace.
+
+For each reply:
+- Put the reasoning inside one outer <think>...</think> block.
+- Inside that block, include exactly one <cast_of_characters>, one <conversation>, and one <group_solution>.
+- Keep the final reply separate in one <answer>...</answer> block.
+- Use <support>...</support> only when the answer depends on explicit cited IDs.
+- Stay concise, answer the user's actual question, and do not explain the benchmark unless asked.
+"""
+
 CUSTOM_PROMPT_DEFAULT = """Think through this in the paper-style multi-persona format.
 
 Question: Is it better to compare a reasoning model to itself in monologue mode, or to a completely different baseline model, when the main claim is that internal multi-persona debate changes behavior?
@@ -128,6 +138,7 @@ async def run_generation_async(
         "thinking_trace": thinking_trace,
         "visible_answer": visible_answer,
         "raw_output": raw_output,
+        "parsed_message": parsed_message,
     }
 
 
@@ -153,3 +164,39 @@ def run_generation(
             max_tokens=max_tokens,
         )
     )
+
+
+
+def initial_chat_state() -> list[dict[str, Any]]:
+    return [{"role": "system", "content": DEFAULT_CHAT_SYSTEM_PROMPT}]
+
+
+def run_chat_turn(
+    history: list[dict[str, Any]] | None,
+    user_message: str,
+    *,
+    model_path: str = BEST_CHECKPOINT,
+    model_name: str = BASE_MODEL,
+    temperature: float = 0.6,
+    top_p: float = 0.95,
+    max_tokens: int = 1024,
+) -> dict[str, Any]:
+    if not user_message.strip():
+        raise RuntimeError("Please enter a message.")
+    conversation = list(history or initial_chat_state())
+    conversation.append({"role": "user", "content": user_message})
+    result = run_generation(
+        conversation,
+        model_path=model_path,
+        model_name=model_name,
+        temperature=temperature,
+        top_p=top_p,
+        max_tokens=max_tokens,
+    )
+    conversation.append(result["parsed_message"])
+    return {
+        "conversation": conversation,
+        "thinking_trace": result["thinking_trace"],
+        "visible_answer": result["visible_answer"],
+        "raw_output": result["raw_output"],
+    }

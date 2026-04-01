@@ -1,0 +1,47 @@
+{
+  "passed": false,
+  "checks": [
+    {
+      "metric": "reward_delta",
+      "actual": 0.3643088790032627,
+      "threshold": 0.35,
+      "passed": true
+    },
+    {
+      "metric": "joint_valid_delta",
+      "actual": 0.12,
+      "threshold": 0.2,
+      "passed": false
+    },
+    {
+      "metric": "disagreement_quality_delta",
+      "actual": 0.33974999999999994,
+      "threshold": 0.4,
+      "passed": false
+    },
+    {
+      "metric": "easy_answer_format_valid_rate",
+      "actual": 0.8,
+      "threshold": 0.95,
+      "passed": false
+    },
+    {
+      "metric": "easy_joint_contract_valid_rate",
+      "actual": 0.675,
+      "threshold": 0.85,
+      "passed": false
+    },
+    {
+      "metric": "hard_interaction_score",
+      "actual": 0.6962549081035924,
+      "threshold": 0.65,
+      "passed": true
+    },
+    {
+      "metric": "hard_disagreement_quality",
+      "actual": 0.24125000000000002,
+      "threshold": 0.45,
+      "passed": false
+    }
+  ]
+}

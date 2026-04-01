@@ -18,6 +18,7 @@ from .core import (
     SUPPORT_TAG,
     TraceTurn,
     THINK_TAG,
+    normalize_text,
     ordered_unique,
 )
 
@@ -29,9 +30,30 @@ CONVERSATION_PATTERN = re.compile(r"<conversation>(.*?)</conversation>", re.DOTA
 GROUP_SOLUTION_PATTERN = re.compile(r"<group_solution>(.*?)</group_solution>", re.DOTALL | re.IGNORECASE)
 PERSONA_PATTERN = re.compile(r"<persona(\d+)>(.*?)</persona\1>", re.DOTALL | re.IGNORECASE)
 TURN_PATTERN = re.compile(r"<think(\d+)>(.*?)</think\1>", re.DOTALL | re.IGNORECASE)
+CHARACTER_PATTERN = re.compile(
+    r"<character\b(?P<attrs_self>[^>]*?)/>|<character\b(?P<attrs_block>[^>]*)>(?P<body>.*?)</character>",
+    re.DOTALL | re.IGNORECASE,
+)
+STEP_PATTERN = re.compile(r"<step\b(?P<attrs>[^>]*)>(?P<body>.*?)</step>", re.DOTALL | re.IGNORECASE)
+GENERIC_TURN_PATTERN = re.compile(r"<([a-z_][a-z0-9_-]*)\b([^>]*)>(.*?)</\1>", re.DOTALL | re.IGNORECASE)
 FIELD_PATTERN = re.compile(r"(?im)^\s*(Role|Personality|Expertise|Style)\s*:\s*(.+?)\s*$")
 THINK_MARKER_PATTERN = re.compile(r"</?think>", re.IGNORECASE)
 REF_PATTERN = re.compile(r"\b(?:N\d+|E\d+|T)\b")
+ATTR_PATTERN = re.compile(r'([a-z_][a-z0-9_-]*)\s*=\s*"([^"]*)"', re.IGNORECASE)
+SPEAKER_LINE_PATTERN = re.compile(r"^\s*([A-Za-z0-9 _-]{2,40})\s*:\s*(.+?)\s*$", re.MULTILINE)
+
+ROLE_FALLBACKS = (
+    "brainstormer",
+    "devils_advocate",
+    "verifier",
+    "synthesizer",
+)
+PERSONALITY_BY_ROLE = {
+    "brainstormer": "high_openness",
+    "devils_advocate": "low_agreeableness",
+    "verifier": "high_conscientiousness",
+    "synthesizer": "high_agreeableness",
+}
 
 
 def _add_issue(errors: list[str], codes: list[str], code: str, detail: str | None = None) -> None:
@@ -53,6 +75,11 @@ class SocietyOfThoughtParser(vf.Parser):
             reasoning_text = "\n\n".join(block.strip() for block in think_blocks if block.strip())
             answer_text = THINK_PATTERN.sub("", text).strip()
             trace_source = "think_tags"
+        else:
+            implicit = self._split_implicit_think(text)
+            if implicit is not None:
+                reasoning_text, answer_text = implicit
+                trace_source = "implicit_think_close"
         return self._parse_message(answer_text=answer_text, reasoning_text=reasoning_text, trace_source=trace_source)
 
     def parse_completion(self, completion: vf.Messages) -> ParsedTrace:
@@ -85,6 +112,11 @@ class SocietyOfThoughtParser(vf.Parser):
                 trace_source = "think_tags"
                 reasoning_text = "\n\n".join(block.strip() for block in think_blocks if block.strip())
                 answer_candidate = THINK_PATTERN.sub("", answer_text).strip()
+            else:
+                implicit = self._split_implicit_think(answer_text)
+                if implicit is not None:
+                    trace_source = "implicit_think_close"
+                    reasoning_text, answer_candidate = implicit
         answer_candidate = THINK_MARKER_PATTERN.sub("", answer_candidate).strip()
         return self._parse_message(answer_text=answer_candidate, reasoning_text=reasoning_text, trace_source=trace_source)
 
@@ -129,7 +161,9 @@ class SocietyOfThoughtParser(vf.Parser):
             _add_issue(protocol_errors, protocol_error_codes, "missing_reasoning_trace")
         else:
             if self.trace_mode == "debate":
-                personas, turns, group_solution, raw_trace = self._parse_debate_trace(reasoning_text, trace_errors, trace_error_codes)
+                personas, turns, group_solution, raw_trace = self._parse_debate_trace(
+                    reasoning_text, trace_errors, trace_error_codes
+                )
             else:
                 turns, raw_trace = self._parse_monologue_trace(reasoning_text, trace_errors, trace_error_codes)
 
@@ -174,8 +208,8 @@ class SocietyOfThoughtParser(vf.Parser):
             _add_issue(errors, codes, "group_solution_invalid")
             return [], [], None, None
 
-        personas = self._parse_personas(cast_matches[0], errors, codes)
-        turns = self._parse_turns(conversation_matches[0], personas, errors, codes)
+        personas, persona_aliases = self._parse_personas(cast_matches[0], errors, codes)
+        turns = self._parse_turns(conversation_matches[0], personas, persona_aliases, errors, codes)
         group_solution = group_matches[0].strip()
         if not personas or not turns:
             return personas, turns, None if not group_solution else group_solution, None
@@ -206,13 +240,18 @@ class SocietyOfThoughtParser(vf.Parser):
         )
         return [turn], {"analysis": [self._turn_to_dict(turn)]}
 
-    def _parse_personas(self, cast_text: str, errors: list[str], codes: list[str]) -> list[Persona]:
+    def _parse_personas(
+        self,
+        cast_text: str,
+        errors: list[str],
+        codes: list[str],
+    ) -> tuple[list[Persona], dict[str, str]]:
         matches = PERSONA_PATTERN.findall(cast_text)
         if not matches:
-            _add_issue(errors, codes, "persona_blocks_missing")
-            return []
+            return self._parse_character_personas(cast_text, errors, codes)
         personas: list[Persona] = []
         seen_ordinals: set[int] = set()
+        aliases: dict[str, str] = {}
         for ordinal_text, body in matches:
             ordinal = int(ordinal_text)
             if ordinal in seen_ordinals:
@@ -220,18 +259,11 @@ class SocietyOfThoughtParser(vf.Parser):
                 continue
             seen_ordinals.add(ordinal)
             fields = {name.lower(): value.strip() for name, value in FIELD_PATTERN.findall(body)}
-            role = fields.get("role", "")
-            personality = fields.get("personality", "")
-            expertise = fields.get("expertise", "")
-            style = fields.get("style", "") or STYLE_BY_ROLE.get(role, "")
-            if role not in ALLOWED_ROLES:
-                _add_issue(errors, codes, "persona_role_invalid", role)
-            if personality not in ALLOWED_PERSONALITIES:
-                _add_issue(errors, codes, "persona_personality_invalid", personality)
-            if not expertise:
-                _add_issue(errors, codes, "persona_expertise_invalid")
-            if not style:
-                _add_issue(errors, codes, "persona_style_invalid")
+            raw_role = fields.get("role", "")
+            role = raw_role or self._normalize_role(body, ordinal)
+            personality = fields.get("personality", "") or self._normalize_personality(None, role)
+            expertise = fields.get("expertise", "") or role
+            style = fields.get("style", "") or STYLE_BY_ROLE.get(self._normalize_role(role, ordinal), "")
             personas.append(
                 Persona(
                     id=f"P{ordinal}",
@@ -242,43 +274,253 @@ class SocietyOfThoughtParser(vf.Parser):
                     ordinal=ordinal,
                 )
             )
+            aliases[str(ordinal)] = f"P{ordinal}"
+            aliases[f"p{ordinal}"] = f"P{ordinal}"
         personas.sort(key=lambda persona: persona.ordinal)
-        return personas
+        if personas:
+            for persona in personas:
+                for alias in {
+                    _normalize_alias(persona.id),
+                    _normalize_alias(persona.role),
+                    _normalize_alias(persona.expertise),
+                }:
+                    if alias:
+                        aliases[alias] = persona.id
+            return personas, aliases
+        return self._parse_line_personas(cast_text, errors, codes)
+
+    def _parse_character_personas(
+        self,
+        cast_text: str,
+        errors: list[str],
+        codes: list[str],
+    ) -> tuple[list[Persona], dict[str, str]]:
+        personas: list[Persona] = []
+        aliases: dict[str, str] = {}
+        for ordinal, match in enumerate(CHARACTER_PATTERN.finditer(cast_text), start=1):
+            attrs = self._parse_attrs(match.group("attrs_self") or match.group("attrs_block") or "")
+            body = (match.group("body") or "").strip()
+            label = attrs.get("name") or attrs.get("id") or body or f"character_{ordinal}"
+            role_hint = attrs.get("role") or body
+            role = self._normalize_role(role_hint, ordinal)
+            personality = self._normalize_personality(attrs.get("personality"), role)
+            expertise = attrs.get("expertise") or _normalize_alias(label) or role
+            style = attrs.get("style") or STYLE_BY_ROLE.get(role, "")
+            persona_id = attrs.get("name") or attrs.get("id") or label or f"C{ordinal}"
+            persona = Persona(
+                id=self._speaker_id(persona_id, ordinal),
+                role=role,
+                personality=personality,
+                expertise=expertise,
+                style=style,
+                ordinal=ordinal,
+            )
+            personas.append(persona)
+            for alias in {
+                str(ordinal),
+                f"p{ordinal}",
+                _normalize_alias(label),
+                _normalize_alias(attrs.get("name", "")),
+                _normalize_alias(attrs.get("id", "")),
+                _normalize_alias(attrs.get("role", "")),
+            }:
+                if alias:
+                    aliases[alias] = persona.id
+        if not personas:
+            return self._parse_line_personas(cast_text, errors, codes)
+        return personas, aliases
+
+    def _parse_line_personas(
+        self,
+        cast_text: str,
+        errors: list[str],
+        codes: list[str],
+    ) -> tuple[list[Persona], dict[str, str]]:
+        personas: list[Persona] = []
+        aliases: dict[str, str] = {}
+        lines = [line.strip(" -\t") for line in cast_text.splitlines() if line.strip()]
+        for ordinal, line in enumerate(lines, start=1):
+            if not line:
+                continue
+            name, sep, rest = line.partition(":")
+            label = name.strip() if sep else line
+            description = rest.strip() if sep else line
+            role = self._normalize_role(description or label, ordinal)
+            persona = Persona(
+                id=self._speaker_id(label, ordinal),
+                role=label.strip() or role,
+                personality=self._normalize_personality(None, role),
+                expertise=description or role,
+                style="",
+                ordinal=ordinal,
+            )
+            personas.append(persona)
+            for alias in {
+                str(ordinal),
+                f"p{ordinal}",
+                _normalize_alias(label),
+                _normalize_alias(description),
+            }:
+                if alias:
+                    aliases[alias] = persona.id
+        if not personas:
+            _add_issue(errors, codes, "persona_blocks_missing")
+            return [], {}
+        return personas, aliases
 
     def _parse_turns(
         self,
         conversation_text: str,
         personas: list[Persona],
+        persona_aliases: dict[str, str],
         errors: list[str],
         codes: list[str],
     ) -> list[TraceTurn]:
         matches = TURN_PATTERN.findall(conversation_text)
-        if not matches:
-            _add_issue(errors, codes, "conversation_turns_missing")
-            return []
-        by_ordinal = {persona.ordinal: persona for persona in personas}
+        if matches:
+            by_ordinal = {persona.ordinal: persona for persona in personas}
+            turns: list[TraceTurn] = []
+            for index, (ordinal_text, body) in enumerate(matches, start=1):
+                ordinal = int(ordinal_text)
+                if ordinal not in by_ordinal:
+                    _add_issue(errors, codes, "turn_persona_mismatch", ordinal_text)
+                    continue
+                content = body.strip()
+                if not content:
+                    _add_issue(errors, codes, "turn_content_invalid", ordinal_text)
+                    continue
+                turn_id = f"t{index}"
+                reply_to = [turns[-1].id] if turns else []
+                turns.append(
+                    TraceTurn(
+                        id=turn_id,
+                        speaker=by_ordinal[ordinal].id,
+                        act=self._infer_turn_act(content, position=index - 1, total_turns=len(matches)),
+                        refs=_extract_refs(content),
+                        reply_to=reply_to,
+                        content=content,
+                    )
+                )
+            return turns
+
+        step_matches = list(STEP_PATTERN.finditer(conversation_text))
+        if step_matches:
+            return self._parse_step_turns(step_matches, persona_aliases, errors, codes)
+
+        generic_turns = self._parse_generic_turns(conversation_text, persona_aliases, errors, codes)
+        if generic_turns:
+            return generic_turns
+        line_turns = self._parse_speaker_lines(conversation_text, persona_aliases, errors, codes)
+        if line_turns:
+            return line_turns
+        _add_issue(errors, codes, "conversation_turns_missing")
+        return []
+
+    def _parse_step_turns(
+        self,
+        step_matches: list[re.Match[str]],
+        persona_aliases: dict[str, str],
+        errors: list[str],
+        codes: list[str],
+    ) -> list[TraceTurn]:
         turns: list[TraceTurn] = []
-        for index, (ordinal_text, body) in enumerate(matches, start=1):
-            ordinal = int(ordinal_text)
-            if ordinal not in by_ordinal:
-                _add_issue(errors, codes, "turn_persona_mismatch", ordinal_text)
+        for index, match in enumerate(step_matches, start=1):
+            attrs = self._parse_attrs(match.group("attrs") or "")
+            speaker_hint = attrs.get("speaker") or attrs.get("name") or str(index)
+            speaker = persona_aliases.get(_normalize_alias(speaker_hint))
+            if not speaker:
+                _add_issue(errors, codes, "turn_persona_mismatch", speaker_hint)
                 continue
-            content = body.strip()
+            content = (match.group("body") or "").strip()
             if not content:
-                _add_issue(errors, codes, "turn_content_invalid", ordinal_text)
+                _add_issue(errors, codes, "turn_content_invalid", speaker_hint)
                 continue
-            turn_id = f"t{index}"
-            reply_to = [turns[-1].id] if turns else []
             turns.append(
                 TraceTurn(
-                    id=turn_id,
-                    speaker=by_ordinal[ordinal].id,
-                    act=self._infer_turn_act(content, position=index - 1, total_turns=len(matches)),
+                    id=f"t{index}",
+                    speaker=speaker,
+                    act=self._infer_turn_act(
+                        content,
+                        position=index - 1,
+                        total_turns=len(step_matches),
+                        action_hint=attrs.get("action"),
+                    ),
                     refs=_extract_refs(content),
-                    reply_to=reply_to,
+                    reply_to=[turns[-1].id] if turns else [],
                     content=content,
                 )
             )
+        return turns
+
+    def _parse_generic_turns(
+        self,
+        conversation_text: str,
+        persona_aliases: dict[str, str],
+        errors: list[str],
+        codes: list[str],
+    ) -> list[TraceTurn]:
+        turns: list[TraceTurn] = []
+        for match in GENERIC_TURN_PATTERN.finditer(conversation_text):
+            tag_name = match.group(1).lower()
+            if tag_name in {
+                CAST_TAG,
+                CONVERSATION_TAG,
+                GROUP_SOLUTION_TAG,
+                ANSWER_TAG,
+                SUPPORT_TAG,
+            } or tag_name.startswith("persona") or tag_name.startswith("think") or tag_name == "step":
+                continue
+            body = (match.group(3) or "").strip()
+            if not body:
+                continue
+            speaker = persona_aliases.get(_normalize_alias(tag_name))
+            if not speaker:
+                continue
+            index = len(turns) + 1
+            turns.append(
+                TraceTurn(
+                    id=f"t{index}",
+                    speaker=speaker,
+                    act=self._infer_turn_act(body, position=index - 1, total_turns=0),
+                    refs=_extract_refs(body),
+                    reply_to=[turns[-1].id] if turns else [],
+                    content=body,
+                )
+            )
+        if turns and len(turns) < 2:
+            _add_issue(errors, codes, "conversation_turns_missing")
+            return []
+        return turns
+
+    def _parse_speaker_lines(
+        self,
+        conversation_text: str,
+        persona_aliases: dict[str, str],
+        errors: list[str],
+        codes: list[str],
+    ) -> list[TraceTurn]:
+        turns: list[TraceTurn] = []
+        for speaker_name, body in SPEAKER_LINE_PATTERN.findall(conversation_text):
+            speaker = persona_aliases.get(_normalize_alias(speaker_name))
+            if not speaker:
+                continue
+            content = body.strip()
+            if not content:
+                continue
+            index = len(turns) + 1
+            turns.append(
+                TraceTurn(
+                    id=f"t{index}",
+                    speaker=speaker,
+                    act=self._infer_turn_act(content, position=index - 1, total_turns=0),
+                    refs=_extract_refs(content),
+                    reply_to=[turns[-1].id] if turns else [],
+                    content=content,
+                )
+            )
+        if turns and len(turns) < 2:
+            _add_issue(errors, codes, "conversation_turns_missing")
+            return []
         return turns
 
     def _parse_answer_text(
@@ -308,7 +550,35 @@ class SocietyOfThoughtParser(vf.Parser):
         final_answer = answer_matches[0].strip()
         return final_answer, support, {"answer": final_answer, "support": support}
 
-    def _infer_turn_act(self, content: str, *, position: int, total_turns: int) -> str:
+    def _split_implicit_think(self, text: str) -> tuple[str, str] | None:
+        if "<think>" in text.lower():
+            return None
+        close_index = text.lower().find("</think>")
+        if close_index == -1:
+            return None
+        reasoning_candidate = text[:close_index].strip()
+        answer_candidate = text[close_index + len("</think>") :].strip()
+        if not reasoning_candidate or not answer_candidate:
+            return None
+        if self.trace_mode == "debate":
+            lowered = reasoning_candidate.lower()
+            if "<cast_of_characters>" not in lowered and "<conversation>" not in lowered:
+                return None
+        return reasoning_candidate, answer_candidate
+
+    def _infer_turn_act(
+        self,
+        content: str,
+        *,
+        position: int,
+        total_turns: int,
+        action_hint: str | None = None,
+    ) -> str:
+        action = normalize_text(action_hint or "")
+        if action in {"question", "propose", "challenge", "verify", "shift", "reconcile"}:
+            return action
+        if action == "answer":
+            return "verify"
         text = content.lower()
         stripped = text.strip()
         if any(
@@ -397,6 +667,33 @@ class SocietyOfThoughtParser(vf.Parser):
             return "reconcile"
         return "propose"
 
+    def _parse_attrs(self, text: str) -> dict[str, str]:
+        return {key.lower(): value.strip() for key, value in ATTR_PATTERN.findall(text or "")}
+
+    def _normalize_role(self, raw: str | None, ordinal: int) -> str:
+        alias = _normalize_alias(raw or "")
+        if alias in {"brainstormer", "solver", "problem_solver", "planner", "analyst", "model"}:
+            return "brainstormer"
+        if alias in {"devils_advocate", "skeptic", "review", "reviewer", "contrarian", "hidden_discussion"}:
+            return "devils_advocate"
+        if alias in {"verifier", "validator", "checker", "critique", "critic"}:
+            return "verifier"
+        if alias in {"synthesizer", "editor", "writer", "resolver", "visible_answer"}:
+            return "synthesizer"
+        return ROLE_FALLBACKS[(ordinal - 1) % len(ROLE_FALLBACKS)]
+
+    def _normalize_personality(self, raw: str | None, role: str) -> str:
+        alias = normalize_text(raw or "").replace(" ", "_")
+        if alias in ALLOWED_PERSONALITIES:
+            return alias
+        return PERSONALITY_BY_ROLE.get(role, "high_openness")
+
+    def _speaker_id(self, raw: str, ordinal: int) -> str:
+        alias = _normalize_alias(raw)
+        if not alias:
+            return f"C{ordinal}"
+        return alias
+
     def _persona_to_dict(self, persona: Persona) -> dict[str, Any]:
         return {
             "id": persona.id,
@@ -420,3 +717,7 @@ class SocietyOfThoughtParser(vf.Parser):
 
 def _extract_refs(text: str) -> list[str]:
     return ordered_unique(REF_PATTERN.findall(text))
+
+
+def _normalize_alias(text: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", (text or "").strip().lower()).strip("_")

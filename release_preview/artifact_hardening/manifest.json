@@ -1,0 +1,65 @@
+{
+  "output_dir": "release_preview/artifact_hardening",
+  "public_checkpoint": "tinker://80d6e740-bf17-52ca-a94c-422c67897617:train:0/sampler_weights/final",
+  "public_model": "Qwen/Qwen3-30B-A3B",
+  "confirmation_paths": {
+    "debate_vs_monologue_medium_100": "release_preview/artifact_hardening/confirmation/debate_vs_monologue_medium_100/summary.json",
+    "protocol_easy_40": "release_preview/artifact_hardening/confirmation/protocol_easy_40/summary.json",
+    "debate_hard_40": "release_preview/artifact_hardening/confirmation/debate_hard_40/summary.json"
+  },
+  "demo_prompt_pack_path": "release_preview/artifact_hardening/demo_prompt_pack.json",
+  "demo_samples_path": "release_preview/artifact_hardening/demo_prompt_samples.json",
+  "audit_path": "release_preview/artifact_hardening/trace_audit.json",
+  "usage_path": "release_preview/artifact_hardening/USAGE.md",
+  "repair_decision_path": "release_preview/artifact_hardening/repair_decision.json",
+  "gold_tune_decision_path": "release_preview/artifact_hardening/gold_tune_decision.json",
+  "outside_summary_path": "release_preview/artifact_hardening/outside_background/summary.json",
+  "acceptance": {
+    "passed": false,
+    "checks": [
+      {
+        "metric": "reward_delta",
+        "actual": 0.3643088790032627,
+        "threshold": 0.35,
+        "passed": true
+      },
+      {
+        "metric": "joint_valid_delta",
+        "actual": 0.12,
+        "threshold": 0.2,
+        "passed": false
+      },
+      {
+        "metric": "disagreement_quality_delta",
+        "actual": 0.33974999999999994,
+        "threshold": 0.4,
+        "passed": false
+      },
+      {
+        "metric": "easy_answer_format_valid_rate",
+        "actual": 0.8,
+        "threshold": 0.95,
+        "passed": false
+      },
+      {
+        "metric": "easy_joint_contract_valid_rate",
+        "actual": 0.675,
+        "threshold": 0.85,
+        "passed": false
+      },
+      {
+        "metric": "hard_interaction_score",
+        "actual": 0.6962549081035924,
+        "threshold": 0.65,
+        "passed": true
+      },
+      {
+        "metric": "hard_disagreement_quality",
+        "actual": 0.24125000000000002,
+        "threshold": 0.45,
+        "passed": false
+      }
+    ]
+  },
+  "has_audit": true
+}

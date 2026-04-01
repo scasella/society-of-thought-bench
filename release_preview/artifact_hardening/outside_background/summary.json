@@ -1,0 +1,82 @@
+{
+  "comparison": "same checkpoint in debate mode vs monologue mode on a locked 25-per-benchmark outside sample",
+  "benchmarks": [
+    {
+      "benchmark": "gsm8k",
+      "debate_native_score": 0.96,
+      "monologue_native_score": 0.88,
+      "native_score_delta": 0.07999999999999996,
+      "debate_reasoning_contract_valid_rate": 0.36,
+      "monologue_reasoning_contract_valid_rate": 1.0,
+      "reasoning_contract_valid_delta": -0.64,
+      "visible_answer_valid_delta": -0.16000000000000003
+    },
+    {
+      "benchmark": "mmlu_pro",
+      "debate_native_score": 0.44,
+      "monologue_native_score": 0.36,
+      "native_score_delta": 0.08000000000000002,
+      "debate_reasoning_contract_valid_rate": 0.24,
+      "monologue_reasoning_contract_valid_rate": 1.0,
+      "reasoning_contract_valid_delta": -0.76,
+      "visible_answer_valid_delta": 0.20000000000000007
+    },
+    {
+      "benchmark": "gpqa",
+      "debate_native_score": 0.24,
+      "monologue_native_score": 0.12,
+      "native_score_delta": 0.12,
+      "debate_reasoning_contract_valid_rate": 0.32,
+      "monologue_reasoning_contract_valid_rate": 1.0,
+      "reasoning_contract_valid_delta": -0.6799999999999999,
+      "visible_answer_valid_delta": 0.31999999999999995
+    },
+    {
+      "benchmark": "ifeval",
+      "debate_native_score": 0.52,
+      "monologue_native_score": 0.6,
+      "native_score_delta": -0.07999999999999996,
+      "debate_reasoning_contract_valid_rate": 0.48,
+      "monologue_reasoning_contract_valid_rate": 1.0,
+      "reasoning_contract_valid_delta": -0.52,
+      "visible_answer_valid_delta": -0.31999999999999995
+    }
+  ],
+  "macro_average": {
+    "native_score_delta": 0.050000000000000044,
+    "visible_answer_valid_delta": 0.010000000000000009,
+    "reasoning_contract_valid_delta": -0.65,
+    "non_negative_native_score_benchmarks": 3
+  },
+  "acceptance": {
+    "threshold_key": "same_checkpoint",
+    "passed": false,
+    "checks": [
+      {
+        "metric": "native_score_delta",
+        "actual": 0.050000000000000044,
+        "threshold": 0.03,
+        "passed": true
+      },
+      {
+        "metric": "non_negative_native_score_benchmarks",
+        "actual": 3,
+        "threshold": 3,
+        "passed": true
+      },
+      {
+        "metric": "reasoning_contract_valid_delta",
+        "actual": -0.65,
+        "threshold": -0.1,
+        "passed": false
+      },
+      {
+        "metric": "visible_answer_valid_delta",
+        "actual": 0.010000000000000009,
+        "threshold": -0.05,
+        "passed": true
+      }
+    ]
+  },
+  "release_use": "background_only"
+}

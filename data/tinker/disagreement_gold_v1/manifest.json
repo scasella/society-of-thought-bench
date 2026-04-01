@@ -1,0 +1,49 @@
+{
+  "created_at": "2026-04-01T17:35:45.539180+00:00",
+  "source_file": "data/tinker/disagreement_gold_v1/source.json",
+  "objective_profile": "debate_primary",
+  "gold_counts": {
+    "train": 48,
+    "val": 16,
+    "lock": 16
+  },
+  "family_difficulty_counts": {
+    "countdown_hard_lock": 4,
+    "countdown_hard_train": 12,
+    "countdown_hard_val": 4,
+    "countdown_medium_lock": 4,
+    "countdown_medium_train": 12,
+    "countdown_medium_val": 4,
+    "evidence_hard_lock": 4,
+    "evidence_hard_train": 12,
+    "evidence_hard_val": 4,
+    "evidence_medium_lock": 4,
+    "evidence_medium_train": 12,
+    "evidence_medium_val": 4
+  },
+  "pattern_counts": {
+    "alternative_route_challenge": 20,
+    "assumption_challenge": 20,
+    "stale_evidence_challenge": 20,
+    "verification_pushback": 20
+  },
+  "dialect_counts": {
+    "character_step": 20,
+    "named_tag": 20,
+    "persona_think": 20,
+    "speaker_lines": 20
+  },
+  "train_path": "data/tinker/disagreement_gold_v1/sft_train.jsonl",
+  "val_path": "data/tinker/disagreement_gold_v1/sft_val.jsonl",
+  "lock_eval_path": "data/tinker/disagreement_gold_v1/lock_eval.jsonl",
+  "tune_train_path": "data/tinker/disagreement_gold_v1/tune_train.jsonl",
+  "tune_val_path": "data/tinker/disagreement_gold_v1/tune_val.jsonl",
+  "tune_mix": {
+    "gold_train_examples": 48,
+    "gold_val_examples": 16,
+    "internal_train_examples": 20,
+    "internal_val_examples": 7,
+    "train_gold_ratio": 0.7058823529411765,
+    "val_gold_ratio": 0.6956521739130435
+  }
+}

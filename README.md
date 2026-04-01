@@ -11,6 +11,7 @@ Start here:
 - Live demo: [scasella91/society-of-thought-bench-demo](https://huggingface.co/spaces/scasella91/society-of-thought-bench-demo)
 - Released comparison: [Debate vs Monologue Summary](./release_preview/results/debate_vs_monologue_medium_preview.summary.json)
 - Raw sample trace: [RAW_SAMPLE.md](./release_preview/RAW_SAMPLE.md)
+- Hardening packet: [artifact_hardening/README.md](./release_preview/artifact_hardening/README.md)
 
 `society-of-thought-bench` is an experimental Verifiers benchmark built to test that released comparison in a reproducible way.
 
@@ -22,6 +23,17 @@ Start here:
 - training and evaluation helpers for supervised tuning, preference tuning, and RL
 
 This preview makes the current result easy to inspect and reproduce. It is not a final benchmark release and not a finished model.
+
+## Hardening Update
+
+We re-ran a stricter confirmation packet around the public checkpoint and published the full audit.
+
+- medium reward delta stayed positive at `0.364`
+- easy joint-valid rate came in at `0.675`
+- easy answer-valid rate came in at `0.800`
+- hard disagreement quality came in at `0.241`
+
+That packet makes the release easier to trust and inspect. It does not change the headline claim above.
 
 ## Main Finding
 
@@ -149,12 +161,31 @@ uv run python scripts/try_tinker_checkpoint.py --family countdown --difficulty m
 
 That helper defaults to the best current preview checkpoint.
 
+To chat with the checkpoint directly from the terminal:
+
+```bash
+uv run python scripts/chat_tinker_checkpoint.py --show-raw-response
+```
+
+That path is useful for exploration. The benchmark examples and audit pack are still the cleanest way to inspect the published behavior.
+
+## How To Inspect This Safely
+
+Start with the benchmark-style examples, because they are the most faithful setting for this checkpoint.
+
+Then inspect the 12-example audit pack:
+
+- [artifact_hardening/TRACE_AUDIT.md](./release_preview/artifact_hardening/TRACE_AUDIT.md)
+
+Use open-ended chat after that, as an exploratory interface rather than as the main evidence for the claim.
+
 ## Key Docs
 
 - [Findings](./release_preview/FINDINGS.md)
 - [Results](./release_preview/RESULTS.md)
 - [Raw Sample](./release_preview/RAW_SAMPLE.md)
 - [Limitations](./release_preview/LIMITATIONS.md)
+- [Hardening Packet](./release_preview/artifact_hardening/README.md)
 - [HF Model Card Source](./release_preview/HF_MODEL_CARD.md)
 - [GitHub Announcement Copy](./release_preview/GITHUB_ANNOUNCEMENT.md)
 - [Hugging Face Announcement Copy](./release_preview/HF_ANNOUNCEMENT.md)

@@ -12,6 +12,7 @@ from typing import Any
 from datasets import Dataset
 
 from society_of_thought_bench.training_data import DATA_ROOT, DPO_RUN_DEFAULTS, OUTPUT_ROOT
+from society_of_thought_bench.tinker_renderers import patch_tinker_cookbook_renderers
 
 
 def main() -> None:
@@ -39,12 +40,14 @@ def main() -> None:
     args = parser.parse_args()
 
     log_path = args.log_path or default_log_path("dpo", args.model_name)
+    resolved_load_checkpoint_path = as_training_checkpoint_path(args.load_checkpoint_path)
     summary = {
         "train_file": str(args.train_file),
         "val_file": str(args.val_file),
         "model_name": args.model_name,
         "renderer_name": args.renderer_name,
         "load_checkpoint_path": args.load_checkpoint_path,
+        "resolved_load_checkpoint_path": resolved_load_checkpoint_path,
         "reference_model_name": args.reference_model_name or args.model_name,
         "log_path": str(log_path),
         "lora_rank": args.lora_rank,
@@ -75,6 +78,8 @@ def main() -> None:
     from tinker_cookbook.preference.types import Comparison
     from tinker_cookbook.supervised.types import ChatDatasetBuilderCommonConfig
 
+    patch_tinker_cookbook_renderers()
+
     @chz.chz
     class JsonlComparisonBuilder(ComparisonDatasetBuilder):
         train_file: str
@@ -82,8 +87,8 @@ def main() -> None:
         swap: bool = False
 
         def get_train_and_test_datasets(self):
-            train_rows = _load_jsonl(Path(self.train_file))
-            test_rows = _load_jsonl(Path(self.val_file)) if self.val_file else None
+            train_rows = [_normalize_comparison_row(row) for row in _load_jsonl(Path(self.train_file))]
+            test_rows = [_normalize_comparison_row(row) for row in _load_jsonl(Path(self.val_file))] if self.val_file else None
             train_dataset = Dataset.from_list(train_rows)
             test_dataset = Dataset.from_list(test_rows) if test_rows else None
             return train_dataset, test_dataset
@@ -112,24 +117,26 @@ def main() -> None:
     )
 
     cli_utils.check_log_dir(str(log_path), behavior_if_exists="ask")
-    config = train_dpo.Config(
-        log_path=str(log_path),
-        model_name=args.model_name,
-        dataset_builder=dataset_builder,
-        load_checkpoint_path=args.load_checkpoint_path,
-        renderer_name=args.renderer_name,
-        learning_rate=args.learning_rate,
-        lr_schedule=args.lr_schedule,
-        num_epochs=args.num_epochs,
-        dpo_beta=args.dpo_beta,
-        lora_rank=args.lora_rank,
-        save_every=args.save_every,
-        eval_every=args.eval_every,
-        wandb_project=args.wandb_project,
-        wandb_name=args.wandb_name,
-        reference_model_name=args.reference_model_name or args.model_name,
-        max_steps=args.max_steps,
-    )
+    config_kwargs = {
+        "log_path": str(log_path),
+        "model_name": args.model_name,
+        "dataset_builder": dataset_builder,
+        "load_checkpoint_path": resolved_load_checkpoint_path,
+        "renderer_name": args.renderer_name,
+        "learning_rate": args.learning_rate,
+        "lr_schedule": args.lr_schedule,
+        "num_epochs": args.num_epochs,
+        "dpo_beta": args.dpo_beta,
+        "lora_rank": args.lora_rank,
+        "save_every": args.save_every,
+        "eval_every": args.eval_every,
+        "wandb_project": args.wandb_project,
+        "wandb_name": args.wandb_name,
+        "reference_model_name": args.reference_model_name or args.model_name,
+        "max_steps": args.max_steps,
+    }
+    supported = inspect.signature(train_dpo.Config).parameters
+    config = train_dpo.Config(**{k: v for k, v in config_kwargs.items() if k in supported and v is not None})
     result = train_dpo.main(config)
     if inspect.isawaitable(result):
         asyncio.run(result)
@@ -141,6 +148,14 @@ def default_log_path(stage: str, model_name: str) -> Path:
     return OUTPUT_ROOT / stage / f"{stamp}-{model_slug}"
 
 
+def as_training_checkpoint_path(path: str | None) -> str | None:
+    if not path:
+        return path
+    if "/sampler_weights/" in path:
+        return path.replace("/sampler_weights/", "/weights/", 1)
+    return path
+
+
 def _load_jsonl(path: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     with path.open() as handle:
@@ -149,6 +164,15 @@ def _load_jsonl(path: Path) -> list[dict[str, Any]]:
             if line:
                 rows.append(json.loads(line))
     return rows
+
+
+def _normalize_comparison_row(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "prompt_messages": row["prompt_messages"],
+        "completion_A": row["completion_A"],
+        "completion_B": row["completion_B"],
+        "label": row.get("label", "A"),
+    }
 
 
 def require_env(name: str) -> None:
