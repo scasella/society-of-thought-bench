@@ -6,7 +6,7 @@ In the released medium comparison, the same trained model, on the same benchmark
 
 This is benchmark-local evidence from an early research preview, not a broad claim about general-purpose reasoning.
 
-Try it and inspect the evidence directly:
+Start here:
 
 - Live demo: [scasella91/society-of-thought-bench-demo](https://huggingface.co/spaces/scasella91/society-of-thought-bench-demo)
 - Released comparison: [Debate vs Monologue Summary](./release_preview/results/debate_vs_monologue_medium_preview.summary.json)
@@ -21,11 +21,11 @@ Try it and inspect the evidence directly:
 - a public adapter and live demo for inspecting the trace behavior directly
 - training and evaluation helpers for supervised tuning, preference tuning, and RL
 
-This release is meant to make the current result inspectable and reproducible. It is not a final benchmark release and not a finished model.
+This preview makes the current result easy to inspect and reproduce. It is not a final benchmark release and not a finished model.
 
 ## Main Finding
 
-On the released medium comparison, the same trained model does better in debate mode than in monologue mode on this benchmark.
+On the released medium comparison, debate mode beats monologue mode for the same trained model.
 
 - debate average score: `0.732`
 - monologue average score: `0.197`
@@ -39,7 +39,7 @@ Canonical evidence:
 - [Best Medium Debate Summary](./release_preview/results/debate_medium_preview.summary.json)
 - [Hard Supporting Summary](./release_preview/results/debate_hard_preview.summary.json)
 
-Interpretation:
+What to take from it:
 
 - the positive result is real inside this benchmark
 - the result is benchmark-local
@@ -80,7 +80,7 @@ The model should emit one outer thinking block and keep the final answer separat
 <support>...</support>   # evidence tasks only
 ```
 
-Within that contract, the benchmark rewards paper-style behavior in the visible reasoning trace:
+Within that format, the benchmark rewards paper-style debate in the visible reasoning trace:
 
 - distinct personas with distinct roles
 - challenge instead of shallow agreement
@@ -169,7 +169,7 @@ That helper defaults to the best current preview checkpoint.
 
 ## Limitations
 
-This preview should be read narrowly.
+Read this preview narrowly.
 
 - It is an early positive result, not a final paper result.
 - The strongest evidence is the released debate-versus-monologue comparison on this benchmark.
