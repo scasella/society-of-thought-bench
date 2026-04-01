@@ -18,6 +18,12 @@ For each reply:
 """
 
 
+def strip_special_markers(text: str) -> str:
+    cleaned = re.sub(r"^(?:\s*<\|[^>]+?\|>\s*)+", "", text)
+    cleaned = re.sub(r"(?:\s*<\|[^>]+?\|>\s*)+$", "", cleaned)
+    return cleaned.strip()
+
+
 @dataclass
 class CheckpointResponse:
     model_name: str
@@ -34,9 +40,9 @@ def split_message_content(content: Any) -> tuple[list[str], list[str]]:
         if "</think>" in content:
             before_close, after_close = content.split("</think>", 1)
             reasoning = before_close.replace("<think>", "", 1).strip()
-            visible = after_close.strip()
+            visible = strip_special_markers(after_close)
             return ([reasoning] if reasoning else []), ([visible] if visible else [])
-        return [], [content]
+        return [], [strip_special_markers(content)]
     thinking_parts: list[str] = []
     text_parts: list[str] = []
     if isinstance(content, list):
@@ -61,8 +67,12 @@ def extract_tagged_sections(raw_output: str) -> tuple[str, str]:
         answer_parts.append(f"<answer>{answer_match.group(1).strip()}</answer>")
     if support_match:
         answer_parts.append(f"<support>{support_match.group(1).strip()}</support>")
+    if not answer_parts and think_match:
+        trailing_after_think = strip_special_markers(raw_output[think_match.end() :])
+        if trailing_after_think:
+            answer_parts.append(trailing_after_think)
     if not thinking and answer_match:
-        before_answer = raw_output[: answer_match.start()].strip()
+        before_answer = strip_special_markers(raw_output[: answer_match.start()])
         if before_answer:
             thinking = before_answer
     return thinking, "\n".join(answer_parts).strip()
