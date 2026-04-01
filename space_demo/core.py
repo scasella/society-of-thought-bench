@@ -18,6 +18,15 @@ For each reply:
 - Stay concise, answer the user's actual question, and do not explain the benchmark unless asked.
 """
 
+CUSTOM_PROMPT_FORMAT_REMINDER = """Format reminder for this demo:
+- Start directly in the released paper-style format instead of planning how to answer.
+- Put the reasoning inside one outer <think>...</think> block.
+- Inside that block, include exactly one <cast_of_characters>, one <conversation>, and one <group_solution>.
+- Keep the final reply separate in one <answer>...</answer> block.
+- Use <support>...</support> only when the answer depends on explicit cited IDs.
+- Stay concise and answer the question directly.
+"""
+
 CUSTOM_PROMPT_DEFAULT = """Think through this in the paper-style multi-persona format.
 
 Question: Is it better to compare a reasoning model to itself in monologue mode, or to a completely different baseline model, when the main claim is that internal multi-persona debate changes behavior?
@@ -51,6 +60,19 @@ def require_env(name: str) -> None:
     if os.environ.get(name):
         return
     raise RuntimeError(f"{name} is required for the live demo.")
+
+
+def build_custom_prompt_conversation(prompt: str) -> list[dict[str, str]]:
+    cleaned_prompt = prompt.strip()
+    if not cleaned_prompt:
+        raise RuntimeError("Please enter a prompt.")
+    return [
+        {"role": "system", "content": DEFAULT_CHAT_SYSTEM_PROMPT},
+        {
+            "role": "user",
+            "content": f"{cleaned_prompt}\n\n{CUSTOM_PROMPT_FORMAT_REMINDER}",
+        },
+    ]
 
 
 def strip_special_markers(text: str) -> str:

@@ -7,6 +7,9 @@ from pathlib import Path
 
 from society_of_thought_bench.checkpoint_chat import extract_tagged_sections as extract_checkpoint_sections
 from society_of_thought_bench.checkpoint_chat import split_message_content as split_checkpoint_message_content
+from space_demo.core import CUSTOM_PROMPT_FORMAT_REMINDER
+from space_demo.core import DEFAULT_CHAT_SYSTEM_PROMPT
+from space_demo.core import build_custom_prompt_conversation
 from space_demo.core import extract_tagged_sections as extract_demo_sections
 from space_demo.core import split_message_content as split_demo_message_content
 
@@ -87,3 +90,23 @@ def test_demo_split_message_content_handles_inline_think_and_visible_text() -> N
     thinking_parts, text_parts = split_demo_message_content(content)
     assert thinking_parts == ["Debate trace here."]
     assert text_parts == ["Visible answer."]
+
+
+def test_build_custom_prompt_conversation_uses_released_guidance() -> None:
+    conversation = build_custom_prompt_conversation("Give a concise answer.")
+    assert conversation == [
+        {"role": "system", "content": DEFAULT_CHAT_SYSTEM_PROMPT},
+        {
+            "role": "user",
+            "content": f"Give a concise answer.\n\n{CUSTOM_PROMPT_FORMAT_REMINDER}",
+        },
+    ]
+
+
+def test_build_custom_prompt_conversation_rejects_blank_prompt() -> None:
+    try:
+        build_custom_prompt_conversation("   ")
+    except RuntimeError as exc:
+        assert str(exc) == "Please enter a prompt."
+    else:
+        raise AssertionError("Expected blank custom prompt to raise RuntimeError")

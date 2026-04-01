@@ -8,6 +8,7 @@ from core import (
     BEST_CHECKPOINT,
     BENCHMARK_CONVERSATIONS,
     CUSTOM_PROMPT_DEFAULT,
+    build_custom_prompt_conversation,
     initial_chat_state,
     run_chat_turn,
     run_generation,
@@ -35,7 +36,11 @@ def append_chat_message(
 
 
 def generate(source: str, benchmark_choice: str, prompt: str, temperature: float, top_p: float, max_tokens: int):
-    prompt_input = BENCHMARK_CONVERSATIONS[benchmark_choice] if source == "Benchmark example" else prompt
+    prompt_input = (
+        BENCHMARK_CONVERSATIONS[benchmark_choice]
+        if source == "Benchmark example"
+        else build_custom_prompt_conversation(prompt)
+    )
     result = run_generation(
         prompt_input,
         temperature=temperature,
@@ -154,6 +159,8 @@ Helpful links:
 - [Release materials](https://github.com/scasella/society-of-thought-bench/tree/main/release_preview)
 
 Benchmark examples are the most faithful setting for this checkpoint. Custom prompts and chat are useful for exploration, but they are not the main evidence for the release claim.
+
+Custom prompts go through the same released chat guidance before generation, but benchmark examples remain the clearest demonstration path.
 """
                     )
 
