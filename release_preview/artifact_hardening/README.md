@@ -1,8 +1,8 @@
-# Additional Validation and Audit Materials
+# Additional Validation for Society of Thought
 
-This folder contains follow-up validation for the public checkpoint used in the released comparison.
+This folder contains follow-up validation for the released Society of Thought checkpoint.
 
-The main released result remains the medium debate-versus-monologue comparison. These materials add stricter checks, hand-inspectable examples, and release-history notes that help readers understand reliability and failure modes.
+The main released result is still the medium debate-versus-monologue comparison. These materials add stricter checks, hand-inspectable examples, and release-history notes that help readers understand reliability and failure modes.
 
 ## Start Here
 
@@ -27,7 +27,7 @@ After that:
 - [Repair decision](./REPAIR_DECISION.md)
 - [Gold-set tune decision](./GOLD_TUNE_DECISION.md)
 
-These two documents are best read as release-history notes. They explain what later repair attempts tried and why they were not promoted.
+These two documents are release-history notes. They explain what later repair attempts tried and why they were not promoted.
 
 ## Follow-Up Snapshot
 

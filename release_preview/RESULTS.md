@@ -1,8 +1,10 @@
 # Results
 
-The table below reports the canonical debate-versus-monologue comparison. `Average score` is the benchmark reward, `task score` reflects task correctness and grounding, and the debate-specific metrics summarize the quality of the visible discussion.
+These results are the evidence layer for the Society of Thought release. The main comparison asks whether the same trained model does better when it reasons through a visible multi-persona debate rather than a monologue.
 
 ## Main Comparison: Debate vs Monologue
+
+`Average score` is the benchmark reward, `task score` reflects task correctness and grounding, and the debate-specific metrics summarize the quality of the visible discussion.
 
 | Metric | Debate | Monologue | Difference |
 | --- | ---: | ---: | ---: |
@@ -50,4 +52,4 @@ Source:
 
 - `release_preview/results/debate_hard_preview.summary.json`
 
-The released comparison shows a clear within-benchmark advantage for debate mode, while the supporting runs show where the behavior is already strong and where harder cases remain less mature.
+The main released comparison shows a clear within-benchmark advantage for visible debate. The supporting runs show that the behavior is already strong on medium tasks and less mature on the hardest cases.

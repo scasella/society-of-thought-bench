@@ -21,10 +21,11 @@ def generate(source: str, benchmark_choice: str, prompt: str, temperature: float
         max_tokens=max_tokens,
     )
     summary = (
+        "Release: `Society of Thought`\n\n"
         "Model: `Qwen/Qwen3-30B-A3B`\n\n"
         f"Checkpoint: `{BEST_CHECKPOINT}`\n\n"
         f"Prompt source: `{source}`\n\n"
-        "This is a research preview. Benchmark examples are the most faithful mode."
+        "This is a research preview. Benchmark examples are the most faithful mode for the released behavior."
     )
     return summary, result["thinking_trace"], result["visible_answer"], result["raw_output"]
 
@@ -59,18 +60,18 @@ with gr.Blocks(title="Society of Thought Demo") as demo:
         """
 # Society of Thought Demo
 
-Inspect the raw paper-style `<think>` trace from the published preview checkpoint.
+Inspect a released model that reasons through a visible multi-persona debate.
 
-Start with the examples tab if you want the most faithful benchmark-style behavior. Use the chat tab after that for exploratory prompting.
+Start with the examples tab if you want the clearest view of the released benchmark-backed behavior. Use the chat tab after that for exploratory prompting.
 """
     )
     with gr.Tabs():
         with gr.Tab("Chat"):
             gr.Markdown(
                 """
-Chat with the preview checkpoint directly. The chat transcript shows the visible answer, and the full internal debate remains visible below each turn.
+Chat with the released checkpoint directly. The chat transcript shows the visible answer, and the full internal debate remains visible below each turn.
 
-This tab is exploratory. If you want the cleanest view of the released result, start with the benchmark examples first.
+This tab is exploratory. If you want the clearest evidence for the release, start with the benchmark examples first.
 """
             )
             chat_state = gr.State(initial_chat_state())
@@ -123,9 +124,10 @@ This tab is exploratory. If you want the cleanest view of the released result, s
                         """
 Helpful links:
 
-- [Benchmark repo](https://github.com/scasella/society-of-thought-bench)
+- [Model overview](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/MODEL_OVERVIEW.md)
+- [Evidence](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/RESULTS.md)
 - [Adapter repo](https://huggingface.co/scasella91/society-of-thought-qwen3-30b-paper-faithful-adapter)
-- [Release findings](https://github.com/scasella/society-of-thought-bench/tree/main/release_preview)
+- [Release materials](https://github.com/scasella/society-of-thought-bench/tree/main/release_preview)
 
 Benchmark examples are the most faithful setting for this checkpoint. Custom prompts and chat are useful for exploration, but they are not the main evidence for the release claim.
 """

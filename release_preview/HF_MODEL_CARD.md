@@ -8,33 +8,48 @@ tags:
 - reasoning
 - verifiers
 - research
+- multi-persona
+- debate
+- reasoning-trace
 ---
 
-# society-of-thought-qwen3-30b-paper-faithful-adapter
+# Society of Thought
 
-This is a LoRA adapter for `Qwen/Qwen3-30B-A3B` trained for one benchmarked behavior: produce a visible multi-persona debate inside `<think>...</think>` while keeping the final answer separate.
+*Visible Multi-Persona Reasoning Model + Benchmark Evidence*
+
+This is a LoRA adapter for `Qwen/Qwen3-30B-A3B` trained to reason through a visible multi-persona debate rather than a single inner voice.
 
 On the released medium comparison for `society-of-thought-bench`, the same trained model scores `0.732` in debate mode and `0.197` in monologue mode across `40` examples, a gap of `+0.535`. Disagreement quality improves by `+0.560`.
 
-This result is evidence within this benchmark. It is not a broad claim about reasoning outside this setup.
+This is evidence on the benchmark designed to test that behavior. It is not yet a broad claim about reasoning outside this setup.
 
-Try it and inspect the evidence directly:
+## What This Release Shows
+
+- the model can carry out a visible multi-persona debate inside the reasoning trace
+- that debate mode outperforms monologue mode for the same trained model on the benchmark's released medium slice
+- the behavior is inspectable through the demo, raw traces, and audit materials
+
+## What Remains Unproven
+
+- stronger performance outside this benchmark
+- broader transfer across model families
+- reliable handling of the hardest branching and reconciliation cases
+
+## Try It
 
 - Live demo: [scasella91/society-of-thought-bench-demo](https://huggingface.co/spaces/scasella91/society-of-thought-bench-demo)
 - Benchmark repo: [scasella/society-of-thought-bench](https://github.com/scasella/society-of-thought-bench)
-- Released comparison: [debate_vs_monologue_medium_preview.summary.json](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/results/debate_vs_monologue_medium_preview.summary.json)
-- Raw sample: [RAW_SAMPLE.md](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/RAW_SAMPLE.md)
-- Additional validation and audit materials: [artifact_hardening/README.md](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/artifact_hardening/README.md)
+- Model overview: [MODEL_OVERVIEW.md](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/MODEL_OVERVIEW.md)
+- Evidence: [debate_vs_monologue_medium_preview.summary.json](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/results/debate_vs_monologue_medium_preview.summary.json)
+- Audit materials: [artifact_hardening/README.md](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/artifact_hardening/README.md)
 
 ## Intended Use
 
-This adapter is meant for controlled prompting where the model is asked to keep a visible multi-voice discussion in the reasoning trace and a separate final answer outside it.
-
-It is best suited for:
+This adapter is best suited for:
 
 - benchmark-style prompts from `society-of-thought-bench`
 - direct inspection of visible reasoning traces
-- research on debate-versus-monologue behavior in this format
+- research on debate-versus-monologue behavior in a controlled setting
 
 ## Target Output Format
 
@@ -72,6 +87,16 @@ uv run python scripts/chat_tinker_checkpoint.py --show-raw-response
 
 Use open-ended chat for exploration. Use the benchmark examples and audit materials for the clearest view of the released behavior.
 
+## Benchmark Evidence
+
+`society-of-thought-bench` is the evidence layer for this release. It measures whether the visible debate is grounded, interactive, and useful rather than merely present.
+
+Primary evidence:
+
+- debate vs monologue: [summary](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/results/debate_vs_monologue_medium_preview.summary.json)
+- medium debate: [summary](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/results/debate_medium_preview.summary.json)
+- hard debate: [summary](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/results/debate_hard_preview.summary.json)
+
 ## Additional Validation
 
 We also released follow-up validation materials for the same public checkpoint. They include stricter confirmation runs, a 12-example audit set, and release-history notes for later repair attempts.
@@ -90,10 +115,3 @@ See: [artifact_hardening/README.md](https://github.com/scasella/society-of-thoug
 - Medium difficulty is currently the most reliable setting.
 - Harder branching and reconciliation still need work.
 - The benchmark assumes visible reasoning traces and currently fits Qwen-style reasoning models best.
-
-## Backing Evidence
-
-- debate vs monologue: [summary](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/results/debate_vs_monologue_medium_preview.summary.json)
-- medium debate: [summary](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/results/debate_medium_preview.summary.json)
-- hard debate: [summary](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/results/debate_hard_preview.summary.json)
-- additional validation and audit materials: [summary and audit](https://github.com/scasella/society-of-thought-bench/blob/main/release_preview/artifact_hardening/README.md)

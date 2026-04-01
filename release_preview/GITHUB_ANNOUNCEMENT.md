@@ -1,12 +1,12 @@
 # GitHub Announcement Copy
 
-I published `society-of-thought-bench`, an experimental benchmark and reference release for a narrow question: within a controlled benchmark, does the same model do better when its visible reasoning trace is structured as a multi-persona debate rather than a monologue?
+I published **Society of Thought**, a public preview of a Qwen adapter that reasons through a visible multi-persona debate rather than a single inner voice.
 
 On the released medium comparison, the same trained model scores `0.732` in debate mode and `0.197` in monologue mode across `40` examples, a gap of `+0.535`.
 
-The release includes the benchmark package, a public adapter for `Qwen/Qwen3-30B-A3B`, a live demo that shows the raw `<think>` trace, result files, and additional validation materials for the released checkpoint.
+The release includes the adapter, a live demo that shows the raw `<think>` trace, benchmark evidence for the result, and additional audit materials for the released checkpoint.
 
-This is early evidence within the benchmark, not a broad claim about reasoning outside this setup.
+The claim is narrow and deliberate: this is evidence for the released behavior within the benchmark built to test it, not yet a broader claim about transfer outside that setting.
 
 Links:
 

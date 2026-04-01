@@ -2,13 +2,13 @@
 
 This release supports one narrow conclusion:
 
-> Within `society-of-thought-bench`, the same trained model performs better when its visible reasoning trace is structured as a multi-persona debate than when it reasons in a single voice.
+> Society of Thought, a model that reasons through a visible multi-persona debate, performs better on the released benchmark comparison than the same trained model run as a monologue.
 
 ## What We Tested
 
 We compared the same trained model in two modes:
 
-- `debate`: a paper-style cast, conversation, and group solution inside `<think>`
+- `debate`: a visible cast, conversation, and group solution inside `<think>`
 - `monologue`: a single reasoning voice inside `<think>`
 
 The headline comparison used the released checkpoint on medium-difficulty tasks across both task families.
@@ -23,20 +23,19 @@ From the released comparison:
 - task score gap: `+0.200`
 - disagreement-quality gap: `+0.560`
 
-Within this benchmark, the model does more than produce the debate format. It also performs better on the benchmark's grounded measures when it uses that format.
+Within the benchmark designed to test this behavior, the visible debate is associated with better outcomes, not just a different trace format.
 
-## What Looks Strongest Today
+## What This Release Shows
 
-- Medium difficulty is the strongest setting.
-- Persona diversity and interaction are already strong.
-- The debate mode clearly outperforms monologue mode on the released comparison.
-- Many traces are clean enough to inspect directly by hand.
+- the model can sustain a visible multi-persona reasoning process
+- that behavior is inspectable by hand
+- on the benchmark built to test it, the debate mode clearly outperforms monologue mode
 
-## What This Does Not Show
+## What Remains Unproven
 
-- It does not establish a general win on outside benchmarks.
-- It does not show that the model is fully reliable on richer disagreement structure.
-- Harder cases still need stronger branching and reconciliation.
+- broader transfer outside this benchmark
+- stronger reliability on richer disagreement structure
+- mature performance on the hardest branching and reconciliation cases
 
 ## Canonical Evidence
 

@@ -1,34 +1,59 @@
-# society-of-thought-bench
+# Society of Thought
 
-`society-of-thought-bench` is an experimental benchmark and reference release for one question: within this benchmark, does a model do better when its visible reasoning trace is structured as a multi-persona debate rather than a monologue?
+*Visible Multi-Persona Reasoning Model + Benchmark Evidence*
+
+Society of Thought is a public preview of a Qwen adapter that reasons through a visible multi-persona debate rather than a single inner voice.
 
 On the released medium comparison, the same trained model scores `0.732` in debate mode and `0.197` in monologue mode across `40` examples, a gap of `+0.535`. Task score improves by `+0.200`, and disagreement quality improves by `+0.560`.
 
-This is early evidence within this benchmark. It is not a claim about general-purpose reasoning outside this setup.
+This is evidence on the benchmark designed to test that behavior. It is not yet a claim about broader transfer outside this setup.
 
-## Start Here
+## Try It
 
 - Live demo: [scasella91/society-of-thought-bench-demo](https://huggingface.co/spaces/scasella91/society-of-thought-bench-demo)
-- Released comparison: [Debate vs Monologue Summary](./release_preview/results/debate_vs_monologue_medium_preview.summary.json)
-- Raw sample trace: [RAW_SAMPLE.md](./release_preview/RAW_SAMPLE.md)
-- Additional validation and audit materials: [artifact_hardening/README.md](./release_preview/artifact_hardening/README.md)
+- Adapter page: [scasella91/society-of-thought-qwen3-30b-paper-faithful-adapter](https://huggingface.co/scasella91/society-of-thought-qwen3-30b-paper-faithful-adapter)
+- Evidence: [Debate vs Monologue Summary](./release_preview/results/debate_vs_monologue_medium_preview.summary.json)
+- Audit materials: [artifact_hardening/README.md](./release_preview/artifact_hardening/README.md)
 
-## What This Release Includes
+## What This Release Shows
 
-- a benchmark package for visible multi-persona debate in the reasoning trace
-- a released debate-versus-monologue comparison, plus supporting result files
-- a public adapter and live demo for direct inspection
-- training and evaluation helpers for supervised tuning, preference tuning, and RL
+- a released model can carry out a visible multi-persona debate inside its reasoning trace
+- on the benchmark built to test that behavior, debate mode beats monologue mode for the same trained model
+- the traces are inspectable through the demo, raw samples, and audit pack
 
-## Main Result
+## What Remains Unproven
 
-On the released medium comparison, debate mode beats monologue mode for the same trained model.
+- broader gains outside this benchmark
+- stronger reliability on harder branching and reconciliation
+- replication beyond the current Qwen-centered setup
 
-- debate average score: `0.732`
-- monologue average score: `0.197`
-- score gap: `+0.535`
-- task score gain: `+0.200`
-- disagreement-quality gain: `+0.560`
+## What Is Released
+
+- the Society of Thought adapter for `Qwen/Qwen3-30B-A3B`
+- a live demo for inspecting raw reasoning traces
+- `society-of-thought-bench`, the benchmark and evidence layer for the release
+- result files, audit materials, and helper scripts for inspection and evaluation
+
+## How To Inspect The Release
+
+Start with the released comparison, then read the model overview and the raw sample, then move to the audit pack.
+
+- [MODEL_OVERVIEW.md](./release_preview/MODEL_OVERVIEW.md)
+- [RAW_SAMPLE.md](./release_preview/RAW_SAMPLE.md)
+- [TRACE_AUDIT.md](./release_preview/artifact_hardening/TRACE_AUDIT.md)
+
+After that, use the live demo or local scripts for exploratory prompting. Benchmark-style prompts are still the most faithful setting for the released behavior.
+
+## Why The Benchmark Matters
+
+The benchmark is the evidence layer for this release. It is designed to test whether a visible multi-persona reasoning trace is more than a stylistic wrapper.
+
+The benchmark enforces a simple separation:
+
+- the reasoning trace stays inside `<think>...</think>`
+- the visible answer stays outside it
+
+It then measures whether the debate is grounded, interactive, and useful rather than merely present.
 
 Primary evidence:
 
@@ -36,37 +61,9 @@ Primary evidence:
 - [Best Medium Debate Summary](./release_preview/results/debate_medium_preview.summary.json)
 - [Hard Supporting Summary](./release_preview/results/debate_hard_preview.summary.json)
 
-The strongest evidence today is the medium-difficulty comparison. Harder cases still leave room for richer branching and stronger reconciliation.
-
-## Additional Validation
-
-We also released a follow-up audit package for the public checkpoint used in the comparison. It adds stricter confirmation runs, a hand-inspectable audit set, and release-history notes for later repair attempts.
-
-- medium reward delta: `0.364`
-- easy joint-valid rate: `0.675`
-- easy answer-valid rate: `0.800`
-- hard disagreement quality: `0.241`
-
-These materials are best read as additional validation for the released checkpoint:
-
-- [Additional validation and audit materials](./release_preview/artifact_hardening/README.md)
-
-## How To Inspect The Release
-
-Start with the released comparison, then read the raw sample and the 12-example audit pack.
-
-- [RAW_SAMPLE.md](./release_preview/RAW_SAMPLE.md)
-- [TRACE_AUDIT.md](./release_preview/artifact_hardening/TRACE_AUDIT.md)
-
-After that, use the live demo or local scripts for exploratory inspection. Benchmark-style prompts are still the most faithful setting for this checkpoint.
-
 ## Benchmark Overview
 
-The benchmark is built around a simple separation: the reasoning trace stays inside `<think>...</think>`, and the visible answer stays outside it.
-
 ### Debate Mode
-
-The model should emit one outer thinking block and keep the final answer separate:
 
 ```text
 <think>
@@ -148,13 +145,13 @@ prime env install society-of-thought-bench -p environments
 uv run python -c 'import verifiers as vf; vf.load_environment("society-of-thought-bench", family="all", difficulty="medium", num_train=8, num_eval=8)'
 ```
 
-## Try The Release
+## Try The Model
 
 To try it in a browser:
 
 - [Open the live demo Space](https://huggingface.co/spaces/scasella91/society-of-thought-bench-demo)
 
-To see the raw paper-style reasoning trace:
+To see the raw visible reasoning trace:
 
 ```bash
 uv run python scripts/try_tinker_checkpoint.py --family countdown --difficulty medium --show-raw-response
@@ -168,8 +165,9 @@ uv run python scripts/chat_tinker_checkpoint.py --show-raw-response
 
 Use the chat path for exploration. Use the benchmark examples and audit materials for the clearest view of the released behavior.
 
-## Release Materials
+## Evidence And Materials
 
+- [Model Overview](./release_preview/MODEL_OVERVIEW.md)
 - [Findings](./release_preview/FINDINGS.md)
 - [Results](./release_preview/RESULTS.md)
 - [Raw Sample](./release_preview/RAW_SAMPLE.md)
@@ -189,7 +187,7 @@ Use the chat path for exploration. Use the benchmark examples and audit material
 
 ## Limitations
 
-For a fuller statement, see [release_preview/LIMITATIONS.md](./release_preview/LIMITATIONS.md).
+For the full statement, see [release_preview/LIMITATIONS.md](./release_preview/LIMITATIONS.md).
 
 - This is an experimental research preview, not a final benchmark release.
 - The strongest evidence comes from the released debate-versus-monologue comparison within this benchmark.
