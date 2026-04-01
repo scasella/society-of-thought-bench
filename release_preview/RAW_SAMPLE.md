@@ -1,6 +1,8 @@
 # Raw Sample
 
-This is a fresh sample from the current best preview checkpoint on a medium countdown task.
+This is a fresh sample from the released checkpoint on a medium countdown task. It is included to show the format and texture of the visible reasoning trace: distinct roles, an explicit challenge, a revision, and a separate final answer.
+
+It is an illustrative example, not a proof on its own. The released comparison and the audit materials are the stronger evidence for the overall result.
 
 - model: `Qwen/Qwen3-30B-A3B`
 - checkpoint: `tinker://80d6e740-bf17-52ca-a94c-422c67897617:train:0/sampler_weights/final`

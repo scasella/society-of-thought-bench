@@ -4,17 +4,11 @@ Published an experimental adapter preview:
 
 `scasella91/society-of-thought-qwen3-30b-paper-faithful-adapter`
 
-This adapter was trained for one specific behavior:
+This adapter is trained for one benchmarked behavior: carry out a visible multi-persona debate inside the reasoning trace, then keep the final answer separate.
 
-carry out a paper-style, multi-persona debate inside the exposed thinking trace, then keep the final answer separate.
+On the released medium comparison in `society-of-thought-bench`, the same trained model scores `0.732` in debate mode and `0.197` in monologue mode across `40` examples, a gap of `+0.535`.
 
-It was trained against `society-of-thought-bench`, an experimental benchmark for visible multi-persona reasoning. On the clearest current comparison inside that benchmark, the same trained model does better in debate mode than in monologue mode:
-
-- debate average score: `0.732`
-- monologue average score: `0.197`
-- gap: `+0.535`
-
-This is an early positive result, but it is still benchmark-local. The model is inspectable and useful as a preview, but it is not a finished release.
+The repo, model page, demo, and audit materials make that behavior easy to inspect directly.
 
 Links:
 

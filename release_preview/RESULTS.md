@@ -1,5 +1,7 @@
 # Results
 
+The table below reports the canonical debate-versus-monologue comparison. `Average score` is the benchmark reward, `task score` reflects task correctness and grounding, and the debate-specific metrics summarize the quality of the visible discussion.
+
 ## Main Comparison: Debate vs Monologue
 
 | Metric | Debate | Monologue | Difference |
@@ -15,7 +17,7 @@ Source:
 
 - `release_preview/results/debate_vs_monologue_medium_preview.summary.json`
 
-## Best Medium Debate Run
+## Supporting Result: Best Medium Debate Run
 
 | Metric | Value |
 | --- | ---: |
@@ -31,7 +33,7 @@ Source:
 
 - `release_preview/results/debate_medium_preview.summary.json`
 
-## Hard Supporting Run
+## Supporting Result: Hard Run
 
 | Metric | Value |
 | --- | ---: |
@@ -48,6 +50,4 @@ Source:
 
 - `release_preview/results/debate_hard_preview.summary.json`
 
-## Plain-English Takeaway
-
-The debate version is clearly better than the monologue version on this benchmark. The result is promising and real. It is also still early: the model does not yet hit the strongest version of the benchmark on richer branching and reconciliation.
+The released comparison shows a clear within-benchmark advantage for debate mode, while the supporting runs show where the behavior is already strong and where harder cases remain less mature.

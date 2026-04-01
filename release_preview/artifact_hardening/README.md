@@ -1,32 +1,43 @@
-# Artifact Hardening Packet
+# Additional Validation and Audit Materials
 
-This folder is the stricter trust packet for the current public checkpoint.
+This folder contains follow-up validation for the public checkpoint used in the released comparison.
 
-Use it after the main README, not instead of it.
+The main released result remains the medium debate-versus-monologue comparison. These materials add stricter checks, hand-inspectable examples, and release-history notes that help readers understand reliability and failure modes.
 
 ## Start Here
 
 - [Public confirmation note](./CONFIRMATION.md)
 - [Trace audit pack](./TRACE_AUDIT.md)
 - [How to use this checkpoint](./USAGE.md)
-- [Repair decision](./REPAIR_DECISION.md)
-- [Gold-set tune decision](./GOLD_TUNE_DECISION.md)
 - [Outside background summary](./outside_background/summary.json)
 
-## What This Packet Is For
+## What This Folder Contains
 
-- show the strongest internal comparison again, with stricter follow-up checks
-- make the checkpoint easy to inspect by hand
-- show ordinary cases and failures, not just best-looking traces
-- record what small repair attempts were tried and why they were rejected
-- record what the later disagreement-gold tune tried and why it was also rejected
+- stricter confirmation runs for the released checkpoint
+- a 12-example audit pack with strong cases, ordinary cases, and failures
+- a short usage note for readers trying the model themselves
+- release-history notes on later repair attempts and disagreement-gold tuning
 
-## What It Does Not Change
+## How To Read These Materials
 
-- It does not replace the main released benchmark-local result.
-- It does not make a broader outside-benchmark claim.
-- It does not promote a newer checkpoint.
+Start with the confirmation note for the headline follow-up checks, then read the trace audit to see the behavior directly.
 
-The public checkpoint remains:
+After that:
 
-- `tinker://80d6e740-bf17-52ca-a94c-422c67897617:train:0/sampler_weights/final`
+- [Repair decision](./REPAIR_DECISION.md)
+- [Gold-set tune decision](./GOLD_TUNE_DECISION.md)
+
+These two documents are best read as release-history notes. They explain what later repair attempts tried and why they were not promoted.
+
+## Follow-Up Snapshot
+
+- medium reward delta: `0.364`
+- easy joint-valid rate: `0.675`
+- easy answer-valid rate: `0.800`
+- hard disagreement quality: `0.241`
+
+## Public Release Links
+
+- Repo: [scasella/society-of-thought-bench](https://github.com/scasella/society-of-thought-bench)
+- Adapter: [scasella91/society-of-thought-qwen3-30b-paper-faithful-adapter](https://huggingface.co/scasella91/society-of-thought-qwen3-30b-paper-faithful-adapter)
+- Live demo: [scasella91/society-of-thought-bench-demo](https://huggingface.co/spaces/scasella91/society-of-thought-bench-demo)

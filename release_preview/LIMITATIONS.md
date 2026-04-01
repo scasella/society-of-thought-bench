@@ -1,8 +1,8 @@
 # Limitations
 
-- This is an experimental preview, not a finished benchmark release.
-- The strongest comparison is inside this benchmark, not on a separate outside benchmark.
-- The current best model is strongest on medium difficulty.
-- Hard-mode debates still need more genuine branching and better reconciliation.
-- The benchmark expects exposed reasoning traces, so it currently fits Qwen-style reasoning models best.
-- A positive result here should be read as evidence that the approach is promising, not as proof that it wins in every setting.
+- This is an experimental research preview, not a final benchmark release.
+- The strongest evidence comes from the released debate-versus-monologue comparison within this benchmark.
+- Medium difficulty is currently the most reliable setting.
+- Harder debates still need richer branching and stronger reconciliation.
+- The benchmark assumes visible reasoning traces and currently fits Qwen-style reasoning models best.
+- A positive result here should be read as evidence within this benchmark, not as proof of broader transfer.
